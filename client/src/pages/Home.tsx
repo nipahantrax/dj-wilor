@@ -1,4 +1,4 @@
-import { ArrowDownRight, ArrowRight, ArrowUpRight, Play, Radio, Sparkles } from "lucide-react";
+import { ArrowDownRight, ArrowRight, ArrowUpRight, MessageCircle, Play, Radio, Sparkles } from "lucide-react";
 import { useState } from "react";
 import type { ReactNode, SyntheticEvent } from "react";
 import SiteHeader from "@/components/SiteHeader";
@@ -134,7 +134,7 @@ export default function Home() {
               </a>
             ))}
           </div>
-          <div className="portfolio-footer"><p>Créditos compilados desde publicaciones de WILOR y plataformas musicales.</p><a className="text-link text-link-dark" href="https://www.youtube.com/@Wilordj" target="_blank" rel="noreferrer">Ver canal oficial <ArrowUpRight size={15} /></a></div>
+          <div className="portfolio-footer"><p>Catálogo oficial de lanzamientos y colaboraciones discográficas.</p><a className="text-link text-link-dark" href="https://www.youtube.com/@Wilordj" target="_blank" rel="noreferrer">Ver canal oficial <ArrowUpRight size={15} /></a></div>
         </section>
 
         <section className="story-section" id="trayectoria" aria-labelledby="story-title">
@@ -168,11 +168,14 @@ export default function Home() {
           <div className="production-copy">
             <SectionKicker index="03">PRODUCCIÓN & DIRECCIÓN</SectionKicker>
             <h2 id="production-title">El sonido empieza con <em>una visión.</em></h2>
-            <p>Producción musical, dirección creativa y desarrollo de artistas para convertir una idea en un proyecto con identidad y dirección.</p>
+            <p>Producción musical, dirección creativa, beats exclusivos, asesoría legal y desarrollo de artistas para llevar cada proyecto al siguiente nivel.</p>
             <div className="service-list">
-              <div><span>01</span><strong>Producción musical</strong><small>Construcción y evolución del sonido.</small></div>
-              <div><span>02</span><strong>Desarrollo artístico</strong><small>Dirección para artistas en crecimiento.</small></div>
-              <div><span>03</span><strong>Sello & lanzamientos</strong><small>Trabajo de catálogo bajo SELVA MUSIC Group.</small></div>
+              <div><span>01</span><strong>Producción Musical Completa</strong><small>Composición, arreglos, mezcla y masterización lista para plataformas de streaming.</small></div>
+              <div><span>02</span><strong>Creación de Beats & Instrumentales</strong><small>Pistas exclusivas: electro tumbado, funk latino, cumbia y ritmos urbanos.</small></div>
+              <div><span>03</span><strong>Librerías de Samples & Drum Kits</strong><small>Sonidos percusivos, loops y recursos originales diseñados para productores.</small></div>
+              <div><span>04</span><strong>Asesoría Legal & Registro de Obras</strong><small>Protección de derechos de autor (SOBODAYCOM/SENAPI), licencias y split-sheets.</small></div>
+              <div><span>05</span><strong>Distribución Digital Global</strong><small>Lanzamientos en Spotify, Apple Music, YouTube y TikTok con SELVA MUSIC Group.</small></div>
+              <div><span>06</span><strong>Desarrollo Artístico & A&R</strong><small>Dirección ejecutiva, proyección de imagen y gestión para artistas emergentes.</small></div>
             </div>
             <a className="button button-lime production-cta" href="#contacto">Hablemos de tu proyecto <ArrowRight size={16} /></a>
           </div>
@@ -189,7 +192,7 @@ export default function Home() {
                 <h2 id="label-title">El sonido también <em>se construye en equipo.</em></h2>
               </div>
               <div className="label-description">
-                <p>SELVA MUSIC Group es el sello que WILOR presentó públicamente. En su anuncio afirmó haber firmado a sus primeros artistas y grupos; los nombres del roster no aparecen enumerados en las fuentes consultadas.</p>
+                <p>SELVA MUSIC Group es el sello discográfico independiente fundado por WILOR en el Trópico de Cochabamba, enfocado en descubrir, producir y proyectar las nuevas voces y talentos de la música urbana y tropical boliviana hacia el mercado internacional.</p>
                 <a className="button button-outline" href={sealLink} target="_blank" rel="noreferrer">Visitar página del sello <ArrowUpRight size={16} /></a>
               </div>
             </div>
@@ -200,7 +203,7 @@ export default function Home() {
                 <a href="https://www.youtube.com/watch?v=P8i3iDciOhs" target="_blank" rel="noreferrer"><span>2026</span><strong>Imilla Coqueta</strong><small>WILOR · Pampeño</small><ArrowUpRight size={14} /></a>
                 <a href="https://www.youtube.com/watch?v=1khpnl4WE5g" target="_blank" rel="noreferrer"><span>2026</span><strong>Los Envidiosos</strong><small>WILOR · Canseco Z.S. · Cumpa Dorian</small><ArrowUpRight size={14} /></a>
               </div>
-              <p className="roster-note">Colaboradores y créditos de lanzamientos, no una lista de contrataciones individuales.</p>
+              <p className="roster-note">Lanzamientos oficiales y coproducciones discográficas bajo el sello.</p>
             </div>
           </div>
         </section>
@@ -233,6 +236,14 @@ export default function Home() {
             <h2 id="contact-title">¿Hacemos<br /><em>que suene?</em></h2>
             <p>Para contratación, producción y nuevas colaboraciones, conecta directamente con WILOR.</p>
             <div className="contact-actions">
+              <a
+                className="button button-whatsapp"
+                href="https://wa.me/59169528962?text=Hola%20DJ%20WILOR,%20me%20comunico%20desde%20tu%20web%20oficial%20para%20una%20contrataci%C3%B3n%20/%20proyecto%20musical."
+                target="_blank"
+                rel="noreferrer"
+              >
+                <MessageCircle size={18} /> Chatear por WhatsApp <ArrowUpRight size={16} />
+              </a>
               <a className="button button-lime" href={`mailto:${contact.email}?subject=${encodeURIComponent("Contratación y proyectos — DJ WILOR")}`}>Escribir por email <ArrowUpRight size={16} /></a>
               <a className="button button-light-outline" href={`tel:${contact.phoneLink}`}>Llamar · {contact.phoneDisplay} <ArrowUpRight size={16} /></a>
             </div>
@@ -252,6 +263,17 @@ export default function Home() {
         </div>
         <div className="footer-bottom"><span>© 2026 WILOR · Portafolio de música y trayectoria</span><a href="#inicio">Volver arriba <ArrowUpRight size={13} /></a></div>
       </footer>
+
+      <a
+        className="floating-whatsapp"
+        href="https://wa.me/59169528962?text=Hola%20DJ%20WILOR,%20me%20comunico%20desde%20tu%20web%20oficial%20para%20una%20contrataci%C3%B3n%20/%20proyecto%20musical."
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Contactar a DJ WILOR por WhatsApp"
+      >
+        <MessageCircle size={24} />
+        <span>WhatsApp</span>
+      </a>
     </div>
   );
 }
