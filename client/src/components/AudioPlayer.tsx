@@ -58,7 +58,6 @@ export default function AudioPlayer({
   const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
   const [isYtApiReady, setIsYtApiReady] = useState(false);
   const [isBubbleMode, setIsBubbleMode] = useState(true); // Inicia como burbuja flotante moderna
-  const [showMonitor, setShowMonitor] = useState(false);
   const [needsUserUnmute, setNeedsUserUnmute] = useState(false);
 
   const activeTrack = currentTrack || tracks[0];
@@ -260,36 +259,21 @@ export default function AudioPlayer({
         />
       )}
 
-      {/* Monitor de YouTube en Dock Visible */}
+      {/* Motor de Audio en Segundo Plano */}
       <div
-        className={`selva-monitor-dock ${showMonitor ? "is-visible" : "is-minimized"}`}
-        aria-label="Monitor de transmisión oficial de DJ WILOR"
+        style={{
+          position: "fixed",
+          bottom: "-500px",
+          left: "-500px",
+          width: "200px",
+          height: "200px",
+          opacity: 0.001,
+          pointerEvents: "none",
+          zIndex: -1,
+        }}
+        aria-hidden="true"
       >
-        <div className="selva-monitor-header">
-          <div className="selva-monitor-title">
-            <span className="live-dot" />
-            <span>TRANSMISIÓN SELVA MUSIC · BOLIVIA</span>
-          </div>
-          <button
-            type="button"
-            className="monitor-tool-btn"
-            onClick={() => setShowMonitor(false)}
-            title="Minimizar monitor"
-          >
-            <X size={13} />
-          </button>
-        </div>
-
-        <div className="selva-monitor-screen">
-          <div id="selva-yt-monitor" className="selva-yt-frame" />
-        </div>
-
-        {needsUserUnmute && (
-          <div className="selva-unmute-overlay" onClick={handleForceUnmute}>
-            <Volume2 size={18} />
-            <span>Haz clic aquí para activar el volumen oficial</span>
-          </div>
-        )}
+        <div id="selva-yt-monitor" />
       </div>
 
       {/* Playlist desplegable */}
@@ -429,19 +413,6 @@ export default function AudioPlayer({
                 <strong className="audio-title">{activeTrack.title}</strong>
                 <span className="audio-artist">{activeTrack.artist}</span>
               </div>
-
-              {/* Botón para Monitor de Video */}
-              {activeTrack.youtubeId && (
-                <button
-                  type="button"
-                  className={`audio-monitor-toggle ${showMonitor ? "is-active" : ""}`}
-                  onClick={() => setShowMonitor((prev) => !prev)}
-                  title={showMonitor ? "Ocultar monitor de video" : "Ver pantalla de video"}
-                >
-                  <Tv size={13} />
-                  <span>{showMonitor ? "Monitor Activo" : "Ver Video"}</span>
-                </button>
-              )}
             </div>
 
             {/* Controles Centrales & Progreso */}
