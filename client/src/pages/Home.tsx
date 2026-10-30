@@ -1,10 +1,11 @@
-import { ArrowDownRight, ArrowRight, ArrowUpRight, CheckCircle2, Disc3, Headphones, Lock, MapPin, MessageCircle, Mic2, Music2, Play, Radio, Sparkles, Users, X } from "lucide-react";
+import { ArrowDownRight, ArrowRight, ArrowUpRight, Calendar, CheckCircle2, Disc3, Headphones, Image as ImageIcon, Lock, MapPin, MessageCircle, Mic2, Music2, Play, Radio, Sparkles, Users, X } from "lucide-react";
 import { useState } from "react";
 import type { ReactNode, SyntheticEvent } from "react";
 import AdminPanel from "@/components/AdminPanel";
 import AudioPlayer from "@/components/AudioPlayer";
+import BookingModal from "@/components/BookingModal";
 import SiteHeader from "@/components/SiteHeader";
-import { contact, extractAllTracks, milestones, rosterArtists, sealLink, socialLinks, works, type Artist, type Track } from "@/lib/wilorContent";
+import { contact, extractAllTracks, initialBookings, milestones, rosterArtists, sealLink, socialLinks, works, type Artist, type EventBooking, type Track } from "@/lib/wilorContent";
 
 const heroImage = "./assets/hero-gta-tropico.jpg";
 const portraitImage = "./assets/wilor-profile.jpg";
@@ -75,6 +76,41 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState<"all" | "dj" | "vocal" | "group">("all");
   const [isAdminOpen, setIsAdminOpen] = useState(false);
 
+  // Sistema de Reservas & Calendario
+  const [bookings, setBookings] = useState<EventBooking[]>(() => {
+    try {
+      const saved = localStorage.getItem("selva_event_bookings");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return initialBookings;
+  });
+
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [bookingArtist, setBookingArtist] = useState<Artist | null>(null);
+
+  const handleOpenBooking = (art: Artist) => {
+    setBookingArtist(art);
+    setIsBookingModalOpen(true);
+  };
+
+  const handleNewBooking = (newBooking: EventBooking) => {
+    const updated = [newBooking, ...bookings];
+    setBookings(updated);
+    try {
+      localStorage.setItem("selva_event_bookings", JSON.stringify(updated));
+    } catch (e) {}
+  };
+
+  const handleSaveBookings = (updated: EventBooking[]) => {
+    setBookings(updated);
+    try {
+      localStorage.setItem("selva_event_bookings", JSON.stringify(updated));
+    } catch (e) {}
+  };
+
   // Sistema de Audio Global
   const allTracks = extractAllTracks(artists);
   const [currentTrack, setCurrentTrack] = useState<Track | null>(() => allTracks[0] || null);
@@ -119,7 +155,7 @@ export default function Home() {
   return (
     <div className="site-shell">
       <a className="skip-link" href="#contenido">Saltar al contenido</a>
-      <SiteHeader />
+      <SiteHeader onOpenAdmin={() => setIsAdminOpen(true)} />
       <main id="contenido">
         <section className="hero" id="inicio" aria-labelledby="hero-title">
           <img className="hero-image" src={heroImage} onError={fallbackImage("https://i.ytimg.com/vi/TlTuiVFTb0g/maxresdefault.jpg")} alt="Visual de una presentación en vivo relacionada con el portafolio de WILOR." />
@@ -352,7 +388,14 @@ export default function Home() {
                       className="button button-card-view"
                       onClick={() => setSelectedArtist(artist)}
                     >
-                      Perfil & Música
+                      Perfil & Fotos
+                    </button>
+                    <button
+                      type="button"
+                      className="button button-booking-sm"
+                      onClick={() => handleOpenBooking(artist)}
+                    >
+                      <Calendar size={14} /> Reservar Fecha
                     </button>
                     <a
                       className="button button-whatsapp-sm"
@@ -363,7 +406,7 @@ export default function Home() {
                       rel="noreferrer"
                       aria-label={`Cotizar a ${artist.name} por WhatsApp`}
                     >
-                      <MessageCircle size={15} /> Cotizar
+                      <MessageCircle size={15} />
                     </a>
                   </div>
                 </div>
@@ -384,7 +427,12 @@ export default function Home() {
               </div>
               <div className="label-description">
                 <p>SELVA MUSIC Group es el sello discográfico independiente fundado por WILOR en el Trópico de Cochabamba, enfocado en descubrir, producir y proyectar las nuevas voces y talentos de la música urbana y tropical boliviana hacia el mercado internacional.</p>
-                <a className="button button-outline" href={sealLink} target="_blank" rel="noreferrer">Visitar página del sello <ArrowUpRight size={16} /></a>
+                <div className="label-actions-row">
+                  <a className="button button-outline" href={sealLink} target="_blank" rel="noreferrer">Visitar página del sello <ArrowUpRight size={16} /></a>
+                  <button type="button" className="button button-admin-badge" onClick={() => setIsAdminOpen(true)}>
+                    <Lock size={14} /> Panel Maestro del Sello
+                  </button>
+                </div>
               </div>
             </div>
             <div className="label-proof">
@@ -542,6 +590,33 @@ export default function Home() {
                   </ul>
                 </div>
 
+                {/* GALERÍA DE FOTOS / ÁLBUM */}
+                {selectedArtist.gallery && selectedArtist.gallery.length > 0 && (
+                  <div className="artist-gallery-block">
+                    <h4>
+                      <ImageIcon size={15} /> Álbum de Fotos & Shows ({selectedArtist.gallery.length})
+                    </h4>
+                    <div className="artist-modal-gallery-grid">
+                      {selectedArtist.gallery.map((imgUrl, idx) => (
+                        <a
+                          key={idx}
+                          href={imgUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="modal-gallery-item"
+                          title="Ver fotografía en alta resolución"
+                        >
+                          <img
+                            src={imgUrl}
+                            alt={`${selectedArtist.name} foto ${idx + 1}`}
+                            onError={fallbackImage(selectedArtist.photo)}
+                          />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="artist-show-block">
                   <h4><Sparkles size={15} /> Formato de Show en Vivo</h4>
                   <p>{selectedArtist.showFormat}</p>
@@ -621,7 +696,15 @@ export default function Home() {
                 </div>
 
                 <div className="artist-booking-box">
-                  <p>Contratación directa y disponibilidad:</p>
+                  <p>Contratación directa, agenda y disponibilidad de fechas:</p>
+                  <button
+                    type="button"
+                    className="button button-booking-modal"
+                    onClick={() => handleOpenBooking(selectedArtist)}
+                  >
+                    <Calendar size={18} />
+                    <span>Reservar Fecha / Contratación de Eventos</span>
+                  </button>
                   <a
                     className="button button-whatsapp-modal"
                     href={`https://wa.me/59169528962?text=${encodeURIComponent(
@@ -631,7 +714,7 @@ export default function Home() {
                     rel="noreferrer"
                   >
                     <MessageCircle size={18} />
-                    <span>Cotizar a {selectedArtist.name} por WhatsApp</span>
+                    <span>Consultar por WhatsApp (+591 695 28962)</span>
                     <ArrowUpRight size={16} />
                   </a>
                 </div>
@@ -652,12 +735,24 @@ export default function Home() {
         onPrevTrack={handlePrevTrack}
       />
 
+      {/* Modal de Reserva de Fecha y Contratación con Descarga de Comprobante */}
+      <BookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        artist={bookingArtist}
+        existingBookings={bookings}
+        onNewBooking={handleNewBooking}
+      />
+
       {/* Panel de Administración CMS Maestro */}
       <AdminPanel
         isOpen={isAdminOpen}
         onClose={() => setIsAdminOpen(false)}
         artists={artists}
         onSaveArtists={handleSaveArtists}
+        bookings={bookings}
+        onSaveBookings={handleSaveBookings}
+        onPlayTrack={handlePlayTrack}
       />
     </div>
   );

@@ -119,6 +119,21 @@ export const contact = {
 
 export const sealLink = "https://www.facebook.com/61591489856517/";
 
+export type EventBooking = {
+  id: string;
+  artistId: string;
+  artistName: string;
+  clientName: string;
+  clientPhone: string;
+  city: string;
+  eventType: string;
+  date: string;
+  time: string;
+  notes?: string;
+  status: "pending" | "confirmed" | "conflict";
+  createdAt: string;
+};
+
 export type Track = {
   id: string;
   title: string;
@@ -142,6 +157,7 @@ export type Artist = {
   genre: string;
   location: string;
   photo: string;
+  gallery: string[];
   bio: string;
   featuredTrack: {
     title: string;
@@ -159,6 +175,52 @@ export type Artist = {
 export const defaultDemoAudio = "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=tropical-house-113540.mp3";
 export const defaultDemoAudio2 = "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=summer-tropical-beat-10928.mp3";
 export const defaultDemoAudio3 = "https://cdn.pixabay.com/download/audio/2021/08/04/audio_31a293672d.mp3?filename=latin-urban-reggaeton-11090.mp3";
+export const defaultDemoAudio4 = "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=latin-cumbia-electronic-party-15635.mp3";
+
+export const initialBookings: EventBooking[] = [
+  {
+    id: "book-1",
+    artistId: "wilor",
+    artistName: "DJ WILOR",
+    clientName: "Club Babylon Cochabamba",
+    clientPhone: "+591 707 12345",
+    city: "Cochabamba",
+    eventType: "Discoteca / Club",
+    date: "2026-11-14",
+    time: "23:30",
+    notes: "Presentación estelar de fin de semana con set de electro tumbado.",
+    status: "confirmed",
+    createdAt: "2026-10-28",
+  },
+  {
+    id: "book-2",
+    artistId: "emily-escobar",
+    artistName: "Emily Escobar",
+    clientName: "Festival Urbano Santa Cruz",
+    clientPhone: "+591 789 54321",
+    city: "Santa Cruz",
+    eventType: "Festival / Concierto",
+    date: "2026-11-20",
+    time: "21:00",
+    notes: "Show en vivo con cuerpo de baile completo para 'Chica Vacilona'.",
+    status: "confirmed",
+    createdAt: "2026-10-29",
+  },
+  {
+    id: "book-3",
+    artistId: "wilor",
+    artistName: "DJ WILOR",
+    clientName: "Evento Aniversario Villa Tunari",
+    clientPhone: "+591 714 88990",
+    city: "Chapare (Villa Tunari)",
+    eventType: "Aniversario Patronal",
+    date: "2026-11-28",
+    time: "22:00",
+    notes: "Show masivo en el Trópico con pirotecnia de escenario.",
+    status: "confirmed",
+    createdAt: "2026-10-30",
+  },
+];
 
 export const rosterArtists: Artist[] = [
   {
@@ -169,7 +231,13 @@ export const rosterArtists: Artist[] = [
     genre: "Electro Tumbado / Funk Latino / RKT",
     location: "Trópico de Cochabamba, Bolivia",
     photo: "./assets/wilor-profile.jpg",
-    bio: "Pilar fundamental y director creativo de SELVA MUSIC Group. Desde el Trópico de Cochabamba, DJ WILOR ha revolucionado la escena urbana boliviana produciendo éxitos como 'Vuelve Vuelve', 'Los Envidiosos' e 'Imilla Coqueta', fusionando el beat internacional con la identidad de su tierra.",
+    gallery: [
+      "./assets/hero-gta-tropico.jpg",
+      "./assets/wilor-profile.jpg",
+      "https://i.ytimg.com/vi/TlTuiVFTb0g/maxresdefault.jpg",
+      "https://i.ytimg.com/vi/Jn05irCh1UQ/maxresdefault.jpg",
+    ],
+    bio: "Pilar fundamental y director creativo de SELVA MUSIC Group. Desde el Trópico de Cochabamba, DJ WILOR ha revolucionado la escena urbana boliviana produciendo éxitos como 'Vuelve Vuelve', 'Los Envidiosos', 'Imilla Coqueta' y 'Empina', fusionando la fuerza de los ritmos autóctonos con el beat internacional.",
     featuredTrack: {
       title: "Vuelve Vuelve",
       format: "Single Oficial · 2026",
@@ -180,8 +248,9 @@ export const rosterArtists: Artist[] = [
       "Director y Productor Ejecutivo en SELVA MUSIC Group",
       "Producción de hits con millones de reproducciones en streaming",
       "Pionero en la internacionalización del sonido del Chapare",
+      "Giras y shows estelares en los festivales más importantes del país",
     ],
-    showFormat: "Live DJ Set estelar con visuales, animación urbana y percusión en vivo (60 a 90 min).",
+    showFormat: "Live DJ Set estelar con visuales cinematográficos, animación urbana y percusión en vivo (60 a 90 min).",
     bookingStatus: "Disponible para Festivales, Discotecas & Giras Nacionales",
     socials: [
       { platform: "Spotify", url: "https://open.spotify.com/artist/6AiurSOGTBZe8MKSNCPuya" },
@@ -192,7 +261,7 @@ export const rosterArtists: Artist[] = [
     tracks: [
       {
         id: "w-track-1",
-        title: "Vuelve Vuelve",
+        title: "Vuelve Vuelve (Estreno)",
         artist: "DJ WILOR ft. Lesly CH & José Puyal",
         duration: "3:18",
         audioUrl: defaultDemoAudio,
@@ -201,7 +270,7 @@ export const rosterArtists: Artist[] = [
       },
       {
         id: "w-track-2",
-        title: "Los Envidiosos",
+        title: "Los Envidiosos (Electro Tumbado)",
         artist: "DJ WILOR ft. Canseco Z.S. & Cumpa Dorian",
         duration: "2:54",
         audioUrl: defaultDemoAudio2,
@@ -210,11 +279,20 @@ export const rosterArtists: Artist[] = [
       },
       {
         id: "w-track-3",
-        title: "Imilla Coqueta (Funk Mix)",
+        title: "Imilla Coqueta (Funk Boliviano)",
         artist: "DJ WILOR ft. Pampeño",
         duration: "2:45",
         audioUrl: defaultDemoAudio3,
         coverUrl: "https://i.ytimg.com/vi/P8i3iDciOhs/hqdefault.jpg",
+        year: "2026",
+      },
+      {
+        id: "w-track-4",
+        title: "Empina (Club Remix)",
+        artist: "DJ WILOR",
+        duration: "2:30",
+        audioUrl: defaultDemoAudio4,
+        coverUrl: "./assets/wilor-profile.jpg",
         year: "2026",
       },
     ],
@@ -222,12 +300,17 @@ export const rosterArtists: Artist[] = [
   {
     id: "emily-escobar",
     name: "Emily Escobar",
-    role: "Vocalista · Artista Revelación",
+    role: "Vocalista · Pop Urbano & Funk Latino",
     category: "vocal",
     genre: "Funk Latino / Pop Urbano / Cumbia",
     location: "Bolivia",
     photo: "https://i.ytimg.com/vi/hxXAdDaDedE/hqdefault.jpg",
-    bio: "Una de las voces más frescas y magnéticas de la nueva ola urbana. Co-intérprete del éxito viral 'Chica Vacilona' junto a WILOR bajo el crédito de SELVA MUSIC Group, destaca por su versatilidad melódica, carisma en escena y fuerza vocal.",
+    gallery: [
+      "https://i.ytimg.com/vi/hxXAdDaDedE/maxresdefault.jpg",
+      "https://i.ytimg.com/vi/hxXAdDaDedE/hqdefault.jpg",
+      "https://i.ytimg.com/vi/TlTuiVFTb0g/hqdefault.jpg",
+    ],
+    bio: "Una de las voces más frescas y magnéticas de la nueva ola urbana femenina en Bolivia. Co-intérprete del éxito viral 'Chica Vacilona' junto a WILOR bajo el sello SELVA MUSIC Group, destaca por su versatilidad melódica, carisma en escena y fuerza interpretativa.",
     featuredTrack: {
       title: "Chica Vacilona",
       format: "Videoclip Oficial · Funk Remix",
@@ -267,6 +350,58 @@ export const rosterArtists: Artist[] = [
     ],
   },
   {
+    id: "elmer-d8",
+    name: "Elmer D8",
+    role: "Cantautor · Flow & Versatilidad",
+    category: "vocal",
+    genre: "Reggaetón / Funk / Cumbia Urbana",
+    location: "Cochabamba, Bolivia",
+    photo: "https://i.ytimg.com/vi/-vFXHU1r0WM/hqdefault.jpg",
+    gallery: [
+      "https://i.ytimg.com/vi/-vFXHU1r0WM/maxresdefault.jpg",
+      "https://i.ytimg.com/vi/-vFXHU1r0WM/hqdefault.jpg",
+      "https://i.ytimg.com/vi/TlTuiVFTb0g/hqdefault.jpg",
+    ],
+    bio: "Pionero y creador de éxitos virales urbanos en Bolivia. Con temas como 'La Cita' y 'Mira Mira' junto a DJ WILOR, Elmer D8 ha consolidado un estilo contagioso y romántico-fiestero que llena discotecas y acumula millones de reproducciones.",
+    featuredTrack: {
+      title: "La Cita",
+      format: "Videoclip Oficial · Éxito Urbano",
+      youtubeId: "-vFXHU1r0WM",
+      youtubeUrl: "https://www.youtube.com/watch?v=-vFXHU1r0WM",
+    },
+    highlights: [
+      "Compositor e intérprete de hits como 'La Cita' y 'Mira Mira'",
+      "Gran poder de convocatoria en eventos masivos de todo el país",
+      "Colaborador histórico del movimiento impulsado por SELVA MUSIC",
+    ],
+    showFormat: "Show en vivo explosivo con interacción continua, temas virales y secuencias urbanas (50 a 60 min).",
+    bookingStatus: "Disponible para Conciertos, Discotecas & Ferias",
+    socials: [
+      { platform: "YouTube", url: "https://www.youtube.com/watch?v=-vFXHU1r0WM" },
+      { platform: "Spotify", url: "https://open.spotify.com" },
+    ],
+    tracks: [
+      {
+        id: "elmer-tr-1",
+        title: "La Cita",
+        artist: "Elmer D8 ft. DJ WILOR",
+        duration: "3:12",
+        audioUrl: defaultDemoAudio4,
+        coverUrl: "https://i.ytimg.com/vi/-vFXHU1r0WM/hqdefault.jpg",
+        year: "2023",
+      },
+      {
+        id: "elmer-tr-2",
+        title: "Mira Mira",
+        artist: "Elmer D8 & DJ WILOR",
+        duration: "2:50",
+        audioUrl: defaultDemoAudio,
+        coverUrl: "https://i.ytimg.com/vi/-vFXHU1r0WM/hqdefault.jpg",
+        year: "2025",
+      },
+    ],
+  },
+  {
     id: "canseco-dorian",
     name: "Canseco Z.S. & Cumpa Dorian",
     role: "Dúo Urbano · Flow & Rimas",
@@ -274,6 +409,11 @@ export const rosterArtists: Artist[] = [
     genre: "Electro Tumbado / Trap / RKT",
     location: "Zona Sur, Bolivia",
     photo: "https://i.ytimg.com/vi/Jn05irCh1UQ/hqdefault.jpg",
+    gallery: [
+      "https://i.ytimg.com/vi/Jn05irCh1UQ/maxresdefault.jpg",
+      "https://i.ytimg.com/vi/Jn05irCh1UQ/hqdefault.jpg",
+      "./assets/hero-gta-tropico.jpg",
+    ],
     bio: "Exponentes indiscutidos del electro tumbado callejero con líricas auténticas y energía arrolladora. Creadores e intérpretes de 'Los Envidiosos' junto a WILOR, una de las pistas con mayor impacto en boliches y eventos urbanos.",
     featuredTrack: {
       title: "Los Envidiosos",
@@ -320,6 +460,10 @@ export const rosterArtists: Artist[] = [
     genre: "Pop Urbano / Electro Tumbado",
     location: "Cochabamba, Bolivia",
     photo: "https://i.ytimg.com/vi/91myZgOitUk/hqdefault.jpg",
+    gallery: [
+      "https://i.ytimg.com/vi/91myZgOitUk/maxresdefault.jpg",
+      "https://i.ytimg.com/vi/91myZgOitUk/hqdefault.jpg",
+    ],
     bio: "Cantautor prolífico dotado de un registro vocal distintivo y emotivo. En alianza con SELVA MUSIC Group y WILOR lanzó 'LES DUELE VERME BIEN', combinando un mensaje de superación con arreglos acústicos y urbanos de primer nivel.",
     featuredTrack: {
       title: "LES DUELE VERME BIEN",
@@ -359,6 +503,47 @@ export const rosterArtists: Artist[] = [
     ],
   },
   {
+    id: "lesly-jose",
+    name: "Lesly CH & José Puyal",
+    role: "Dúo Melódico · Romantiqueo Urbano",
+    category: "vocal",
+    genre: "Cumbia Urbana / Pop Latino / Electro",
+    location: "Bolivia",
+    photo: "https://i.ytimg.com/vi/TlTuiVFTb0g/hqdefault.jpg",
+    gallery: [
+      "https://i.ytimg.com/vi/TlTuiVFTb0g/maxresdefault.jpg",
+      "https://i.ytimg.com/vi/TlTuiVFTb0g/hqdefault.jpg",
+    ],
+    bio: "Dúo que conquistó al público boliviano junto a DJ WILOR con 'Vuelve Vuelve', el lanzamiento estelar de 2026 bajo SELVA MUSIC Group. Combinan sentimiento, melodías pegajosas y un ritmo bailable imparable.",
+    featuredTrack: {
+      title: "Vuelve Vuelve",
+      format: "Single Oficial 2026",
+      youtubeId: "TlTuiVFTb0g",
+      youtubeUrl: "https://www.youtube.com/watch?v=TlTuiVFTb0g",
+    },
+    highlights: [
+      "Voces protagonistas del hit estelar 'Vuelve Vuelve'",
+      "Gran química en el escenario y conexión con el público romántico-urbano",
+      "Lanzamiento respaldado y distribuido por SELVA MUSIC Group",
+    ],
+    showFormat: "Show a dos voces con formato de show romántico bailable y animación de público (45 a 60 min).",
+    bookingStatus: "Disponible para Fiestas, Boliches & Conciertos",
+    socials: [
+      { platform: "YouTube", url: "https://www.youtube.com/watch?v=TlTuiVFTb0g" },
+    ],
+    tracks: [
+      {
+        id: "lj-track-1",
+        title: "Vuelve Vuelve (Original)",
+        artist: "Lesly CH, José Puyal & WILOR",
+        duration: "3:18",
+        audioUrl: defaultDemoAudio,
+        coverUrl: "https://i.ytimg.com/vi/TlTuiVFTb0g/hqdefault.jpg",
+        year: "2026",
+      },
+    ],
+  },
+  {
     id: "pampeno",
     name: "Pampeño",
     role: "Artista Festivo · Funk & Fiesta",
@@ -366,6 +551,10 @@ export const rosterArtists: Artist[] = [
     genre: "Funk Latino / Cumbia Remix / Fiesta",
     location: "Bolivia",
     photo: "https://i.ytimg.com/vi/P8i3iDciOhs/hqdefault.jpg",
+    gallery: [
+      "https://i.ytimg.com/vi/P8i3iDciOhs/maxresdefault.jpg",
+      "https://i.ytimg.com/vi/P8i3iDciOhs/hqdefault.jpg",
+    ],
     bio: "Sinónimo de fiesta, euforia y ritmo. Junto a WILOR dio a luz a 'Imilla Coqueta', una obra que funde la esencia festiva boliviana con los bajos contundentes del funk brasileño, convirtiéndose en infaltable en celebraciones de todo el país.",
     featuredTrack: {
       title: "Imilla Coqueta",
@@ -393,6 +582,15 @@ export const rosterArtists: Artist[] = [
         coverUrl: "https://i.ytimg.com/vi/P8i3iDciOhs/hqdefault.jpg",
         year: "2026",
       },
+      {
+        id: "p-track-2",
+        title: "Fiestero Mix",
+        artist: "Pampeño",
+        duration: "3:10",
+        audioUrl: defaultDemoAudio4,
+        coverUrl: "https://i.ytimg.com/vi/P8i3iDciOhs/hqdefault.jpg",
+        year: "2026",
+      },
     ],
   },
   {
@@ -403,6 +601,10 @@ export const rosterArtists: Artist[] = [
     genre: "Cumbia Sureña / Fusión Tropical",
     location: "Bolivia",
     photo: "https://i.ytimg.com/vi/1khpnl4WE5g/hqdefault.jpg",
+    gallery: [
+      "https://i.ytimg.com/vi/1khpnl4WE5g/maxresdefault.jpg",
+      "https://i.ytimg.com/vi/1khpnl4WE5g/hqdefault.jpg",
+    ],
     bio: "Agrupación insignia de música tropical en vivo, apadrinada en producción y distribución por SELVA MUSIC Group. Con músicos de trayectoria e instrumentos en directo, ofrecen un despliegue escénico impecable para grandes celebraciones.",
     featuredTrack: {
       title: "Lanzamientos Especiales",

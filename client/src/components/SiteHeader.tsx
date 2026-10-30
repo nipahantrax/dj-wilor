@@ -1,4 +1,4 @@
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { ArrowUpRight, Lock, Menu, X } from "lucide-react";
 import { useState } from "react";
 
 const navigation = [
@@ -8,7 +8,11 @@ const navigation = [
   { label: "Sello", href: "#sello" },
 ];
 
-export default function SiteHeader() {
+interface SiteHeaderProps {
+  onOpenAdmin?: () => void;
+}
+
+export default function SiteHeader({ onOpenAdmin }: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
 
@@ -43,6 +47,19 @@ export default function SiteHeader() {
         <a className="nav-booking" href="#contacto" onClick={closeMenu}>
           Contratación <ArrowUpRight size={15} strokeWidth={1.8} />
         </a>
+        {onOpenAdmin && (
+          <button
+            type="button"
+            className="nav-admin-btn"
+            onClick={() => {
+              closeMenu();
+              onOpenAdmin();
+            }}
+            title="Panel de Control Maestro SELVA MUSIC"
+          >
+            <Lock size={13} /> Acceso Maestro
+          </button>
+        )}
       </nav>
     </header>
   );

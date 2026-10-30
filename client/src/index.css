@@ -1905,6 +1905,1147 @@ img { display: block; max-width: 100%; }
   padding-top: 12px;
 }
 
+/* =========================================================================
+   ESTILOS ADICIONALES: ACCESO MAESTRO, RESERVA DE FECHAS, GALERÍA & CMS
+   ========================================================================= */
+
+/* Botón Acceso Maestro en la barra de navegación */
+.nav-admin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(201, 255, 61, 0.12);
+  border: 1px solid var(--lime);
+  color: var(--lime);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 180ms ease;
+}
+
+.nav-admin-btn:hover {
+  background: var(--lime);
+  color: var(--ink);
+  box-shadow: 0 0 15px rgba(201, 255, 61, 0.35);
+  transform: translateY(-1px);
+}
+
+/* Botón de Reserva en las Cards de Artistas */
+.button-booking-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: #1f2a22;
+  border: 1px solid rgba(201, 255, 61, 0.4);
+  color: var(--lime);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 160ms ease;
+}
+
+.button-booking-sm:hover {
+  background: var(--lime);
+  color: var(--ink);
+  border-color: var(--lime);
+}
+
+/* Botón de Reserva en Modal de Artista */
+.button-booking-modal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 20px;
+  background: var(--lime);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: all 180ms ease;
+}
+
+.button-booking-modal:hover {
+  background: #d8ff70;
+  box-shadow: 0 0 20px rgba(201, 255, 61, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Sección Sello: Acciones */
+.label-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.button-admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: #17201a;
+  border: 1px dashed var(--lime);
+  color: var(--lime);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 160ms ease;
+}
+
+.button-admin-badge:hover {
+  background: rgba(201, 255, 61, 0.15);
+  border-style: solid;
+}
+
+/* Galería de Fotos del Artista en el Modal */
+.artist-gallery-block {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(241, 238, 228, 0.12);
+}
+
+.artist-gallery-block h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+
+.artist-modal-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.modal-gallery-item {
+  position: relative;
+  display: block;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  border-radius: 4px;
+  border: 1px solid rgba(241, 238, 228, 0.15);
+  transition: all 180ms ease;
+}
+
+.modal-gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 300ms ease;
+}
+
+.modal-gallery-item:hover {
+  border-color: var(--lime);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.modal-gallery-item:hover img {
+  transform: scale(1.08);
+}
+
+/* =========================================================================
+   MODAL DE RESERVA Y CONTRATACIÓN (BookingModal)
+   ========================================================================= */
+.booking-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(8, 12, 9, 0.88);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.booking-modal-container {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  background: #111713;
+  border: 1px solid rgba(201, 255, 61, 0.35);
+  border-radius: 8px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+  overflow: hidden;
+  animation: modalFadeIn 200ms ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.booking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: #151e17;
+  border-bottom: 1px solid rgba(241, 238, 228, 0.1);
+}
+
+.booking-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.booking-header-title h3 {
+  margin: 0;
+  font: 700 18px/1.2 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+
+.booking-header-title p {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: rgba(241, 238, 228, 0.65);
+}
+
+.booking-close-btn {
+  background: none;
+  border: none;
+  color: rgba(241, 238, 228, 0.6);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+.booking-close-btn:hover {
+  color: var(--paper);
+  background: rgba(241, 238, 228, 0.1);
+}
+
+.booking-body {
+  padding: 24px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.booking-conflict-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  margin-bottom: 18px;
+  color: #fca5a5;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.booking-conflict-alert strong {
+  color: #ff6b6b;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.booking-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.booking-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.booking-field label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+
+.booking-field input,
+.booking-field select,
+.booking-field textarea {
+  padding: 11px 14px;
+  background: #17201a;
+  border: 1px solid rgba(241, 238, 228, 0.15);
+  color: var(--paper);
+  font-size: 13px;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 150ms ease;
+}
+
+.booking-field input:focus,
+.booking-field select:focus,
+.booking-field textarea:focus {
+  border-color: var(--lime);
+  box-shadow: 0 0 10px rgba(201, 255, 61, 0.2);
+}
+
+.booking-btn-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 15px;
+  background: var(--lime);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 180ms ease;
+}
+
+.booking-btn-submit:hover {
+  background: #d8ff70;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 18px rgba(201, 255, 61, 0.35);
+}
+
+/* Pantalla de Éxito de Reserva */
+.booking-success-box {
+  text-align: center;
+  padding: 24px 12px;
+}
+
+.booking-success-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: rgba(201, 255, 61, 0.15);
+  border: 2px solid var(--lime);
+  color: var(--lime);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.booking-success-box h4 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  color: var(--paper);
+}
+
+.booking-success-box p {
+  font-size: 13px;
+  color: rgba(241, 238, 228, 0.7);
+  max-width: 460px;
+  margin: 0 auto 20px;
+}
+
+.booking-success-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+/* =========================================================================
+   ESTILOS COMPLETOS DEL PANEL MAESTRO (AdminPanel)
+   ========================================================================= */
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background: rgba(8, 12, 9, 0.92);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.admin-modal-container {
+  width: 100%;
+  max-width: 1050px;
+  max-height: 90vh;
+  background: #111713;
+  border: 1px solid rgba(201, 255, 61, 0.35);
+  border-radius: 8px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.95);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.admin-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: #151e17;
+  border-bottom: 1px solid rgba(241, 238, 228, 0.1);
+}
+
+.admin-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-badge-icon {
+  font-size: 24px;
+}
+
+.admin-header-title h2 {
+  margin: 0;
+  font: 700 18px/1.2 var(--display);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+
+.admin-header-title p {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: rgba(241, 238, 228, 0.6);
+}
+
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-btn-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #2b1818;
+  border: 1px solid rgba(255, 128, 128, 0.3);
+  color: #ff9999;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.admin-btn-logout:hover {
+  background: #ff4d4d;
+  color: #fff;
+}
+
+.admin-btn-close {
+  background: none;
+  border: none;
+  color: rgba(241, 238, 228, 0.6);
+  cursor: pointer;
+  padding: 6px;
+}
+
+.admin-btn-close:hover {
+  color: var(--paper);
+}
+
+/* Login */
+.admin-login-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.admin-login-card {
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+
+.admin-lock-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: rgba(201, 255, 61, 0.1);
+  border: 1px solid var(--lime);
+  color: var(--lime);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-login-card h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  color: var(--paper);
+  text-transform: uppercase;
+}
+
+.admin-login-card p {
+  margin: 0 0 20px;
+  font-size: 12px;
+  color: rgba(241, 238, 228, 0.6);
+}
+
+.admin-alert-error {
+  padding: 10px 14px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid #ef4444;
+  border-radius: 4px;
+  color: #fca5a5;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 10px 12px;
+  background: #17201a;
+  border: 1px solid rgba(241, 238, 228, 0.15);
+  color: var(--paper);
+  font-size: 12px;
+  border-radius: 4px;
+  outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--lime);
+}
+
+/* Layout con Tabs */
+.admin-content-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.admin-nav-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 10px 24px 0;
+  background: #151e17;
+  border-bottom: 1px solid rgba(241, 238, 228, 0.1);
+  overflow-x: auto;
+}
+
+.admin-nav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: rgba(241, 238, 228, 0.65);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 160ms ease;
+}
+
+.admin-nav-tab:hover {
+  color: var(--paper);
+}
+
+.admin-nav-tab.is-active {
+  color: var(--lime);
+  border-bottom-color: var(--lime);
+  background: rgba(201, 255, 61, 0.05);
+}
+
+.admin-tab-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 20px;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.admin-panel-card {
+  background: #141c16;
+  border: 1px solid rgba(241, 238, 228, 0.1);
+  border-radius: 6px;
+  padding: 20px;
+}
+
+.admin-panel-card.full-width {
+  grid-column: 1 / -1;
+  overflow-y: auto;
+  max-height: calc(90vh - 140px);
+}
+
+.card-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.card-header-flex h4,
+.admin-panel-card h4 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--lime);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.card-subtext {
+  margin: 4px 0 16px;
+  font-size: 11px;
+  color: rgba(241, 238, 228, 0.6);
+  line-height: 1.4;
+}
+
+.admin-form-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.flex-1 { flex: 1; }
+.flex-2 { flex: 2; }
+
+.input-sub {
+  flex: 1;
+  padding: 8px 10px;
+  background: #111713;
+  border: 1px solid rgba(241, 238, 228, 0.12);
+  color: var(--paper);
+  font-size: 11px;
+  border-radius: 3px;
+}
+
+/* Subcard Galería en Admin */
+.admin-subcard {
+  padding: 14px;
+  background: #111713;
+  border: 1px solid rgba(241, 238, 228, 0.1);
+  border-radius: 4px;
+}
+
+.subcard-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--lime);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.subcard-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.subcard-input-row input {
+  flex: 1;
+  padding: 8px 10px;
+  background: #17201a;
+  border: 1px solid rgba(241, 238, 228, 0.15);
+  color: var(--paper);
+  font-size: 11px;
+}
+
+.admin-gallery-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 8px;
+  max-height: 110px;
+  overflow-y: auto;
+}
+
+.gallery-thumb-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(241, 238, 228, 0.2);
+}
+
+.gallery-thumb-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gallery-thumb-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+  border: none;
+  font-size: 10px;
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Subida Directa de Audio */
+.admin-upload-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  padding: 18px;
+  background: #111713;
+  border: 1px dashed var(--lime);
+  border-radius: 6px;
+  color: var(--lime);
+  cursor: pointer;
+}
+
+.dropzone-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.dropzone-label strong {
+  font-size: 12px;
+  color: var(--lime);
+}
+
+.dropzone-label span {
+  font-size: 11px;
+  color: rgba(241, 238, 228, 0.6);
+}
+
+.dropzone-input {
+  display: none;
+}
+
+/* Catálogo de Artistas en Admin */
+.admin-artist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.admin-artist-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #111713;
+  border: 1px solid rgba(241, 238, 228, 0.1);
+  border-radius: 4px;
+}
+
+.artist-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid rgba(201, 255, 61, 0.3);
+}
+
+.artist-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.artist-info h5 {
+  margin: 0;
+  font-size: 13px;
+  color: var(--paper);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.artist-info span {
+  font-size: 11px;
+  color: var(--lime);
+}
+
+.artist-mini-tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.artist-mini-tags small {
+  font-size: 10px;
+  color: rgba(241, 238, 228, 0.5);
+}
+
+.artist-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-edit {
+  padding: 6px 10px;
+  background: #1f2a22;
+  border: 1px solid var(--lime);
+  color: var(--lime);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.btn-edit:hover {
+  background: var(--lime);
+  color: var(--ink);
+}
+
+.btn-delete {
+  padding: 6px 8px;
+  background: #2b1818;
+  border: 1px solid rgba(255, 128, 128, 0.3);
+  color: #ff8080;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.btn-delete:hover {
+  background: #ff4d4d;
+  color: white;
+}
+
+/* Playlists en Admin */
+.admin-track-roster {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.artist-track-section {
+  padding: 12px;
+  background: #111713;
+  border: 1px solid rgba(241, 238, 228, 0.1);
+  border-radius: 4px;
+}
+
+.artist-track-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(241, 238, 228, 0.08);
+  margin-bottom: 8px;
+}
+
+.artist-track-header img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.artist-track-header strong {
+  font-size: 12px;
+  color: var(--paper);
+  display: block;
+}
+
+.artist-track-header span {
+  font-size: 10px;
+  color: var(--lime);
+}
+
+.track-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-track-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: #17201a;
+  border-radius: 3px;
+}
+
+.track-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--paper);
+}
+
+.btn-play-sm {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--ink);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-track-msg {
+  font-size: 11px;
+  color: rgba(241, 238, 228, 0.4);
+  font-style: italic;
+  margin: 4px 0 0;
+}
+
+/* Calendario & Cruces de Fechas */
+.calendar-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.calendar-stats-pill {
+  padding: 6px 12px;
+  background: #17201a;
+  border: 1px solid var(--lime);
+  color: var(--lime);
+  font-size: 11px;
+  border-radius: 4px;
+}
+
+.admin-bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.booking-card-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #111713;
+  border: 1px solid rgba(241, 238, 228, 0.12);
+  border-radius: 6px;
+  transition: border-color 160ms ease;
+}
+
+.booking-card-item.has-conflict-border {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.booking-card-main {
+  flex: 1;
+}
+
+.booking-meta-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.booking-artist-tag {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--lime);
+}
+
+.booking-date-badge {
+  font-size: 12px;
+  color: var(--paper);
+  background: #1f2a22;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+.booking-status-badge {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+}
+
+.booking-status-badge.status-confirmed {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  border: 1px solid #22c55e;
+}
+
+.booking-status-badge.status-pending {
+  background: rgba(234, 179, 8, 0.2);
+  color: #facc15;
+  border: 1px solid #eab308;
+}
+
+.booking-status-badge.status-conflict {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid #ef4444;
+}
+
+.booking-clash-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid #ef4444;
+  border-radius: 4px;
+  color: #fca5a5;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.booking-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(241, 238, 228, 0.85);
+}
+
+.booking-details-grid strong {
+  color: rgba(241, 238, 228, 0.5);
+}
+
+.booking-details-grid a {
+  color: var(--lime);
+  text-decoration: underline;
+}
+
+.booking-notes-row {
+  margin-top: 8px;
+  font-size: 11px;
+  color: rgba(241, 238, 228, 0.65);
+  background: #17201a;
+  padding: 6px 10px;
+  border-radius: 3px;
+}
+
+.booking-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.booking-status-select {
+  padding: 6px 10px;
+  background: #17201a;
+  border: 1px solid rgba(241, 238, 228, 0.2);
+  color: var(--paper);
+  font-size: 11px;
+  border-radius: 3px;
+}
+
+.btn-delete-booking {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  background: none;
+  border: 1px solid rgba(255, 128, 128, 0.3);
+  color: #ff8080;
+  font-size: 11px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.btn-delete-booking:hover {
+  background: #ff4d4d;
+  color: white;
+}
+
+.empty-bookings-box {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(241, 238, 228, 0.5);
+}
+
+.empty-bookings-box p {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
 @media (max-width: 768px) {
   .global-audio-bar {
     height: auto;

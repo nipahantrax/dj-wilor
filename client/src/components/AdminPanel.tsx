@@ -1,447 +1,916 @@
-import { Check, Edit3, Key, Lock, LogOut, Music, Plus, Trash2, Upload, UserPlus, X } from "lucide-react";
-import { useState } from "react";
-import type { Artist, Track } from "@/lib/wilorContent";
-import { defaultDemoAudio } from "@/lib/wilorContent";
+import {
+  AlertTriangle,
+  Calendar,
+  Check,
+  Disc3,
+  FileAudio,
+  FolderPlus,
+  Image as ImageIcon,
+  Lock,
+  LogOut,
+  Music2,
+  Play,
+  Plus,
+  Trash2,
+  Upload,
+  UserCheck,
+  Users,
+  X,
+} from "lucide-react";
+import React, { useState } from "react";
+import type { Artist, EventBooking, Track } from "@/lib/wilorContent";
 
 interface AdminPanelProps {
   isOpen: boolean;
   onClose: () => void;
   artists: Artist[];
   onSaveArtists: (updated: Artist[]) => void;
+  bookings: EventBooking[];
+  onSaveBookings: (updated: EventBooking[]) => void;
+  onPlayTrack?: (track: Track) => void;
 }
 
-export default function AdminPanel({ isOpen, onClose, artists, onSaveArtists }: AdminPanelProps) {
+export default function AdminPanel({
+  isOpen,
+  onClose,
+  artists,
+  onSaveArtists,
+  bookings,
+  onSaveBookings,
+  onPlayTrack,
+}: AdminPanelProps) {
+  const [activeTab, setActiveTab] = useState<"artists" | "music" | "calendar">("artists");
+  const [authError, setAuthError] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem("selva_admin_session") === "true";
+    try {
+      return localStorage.getItem("selva_admin_session") === "true";
+    } catch {
+      return false;
+    }
   });
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
 
-  // Estado para crear o editar artista
-  const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
 
-  // Campos de formulario
+  // Estado del formulario de artista
+  const [editingArtistId, setEditingArtistId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
-  const [category, setCategory] = useState<"dj" | "vocal" | "group">("vocal");
+  const [category, setCategory] = useState<"dj" | "vocal" | "group">("dj");
   const [genre, setGenre] = useState("");
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState("Trópico de Cochabamba, Bolivia");
   const [photo, setPhoto] = useState("");
+  const [gallery, setGallery] = useState<string[]>([]);
+  const [newGalleryUrl, setNewGalleryUrl] = useState("");
   const [bio, setBio] = useState("");
-  const [showFormat, setShowFormat] = useState("");
-  const [bookingStatus, setBookingStatus] = useState("Disponible para Contrataciones");
-  const [featuredTitle, setFeaturedTitle] = useState("");
-  const [featuredYoutubeId, setFeaturedYoutubeId] = useState("");
+  const [showFormat, setShowFormat] = useState("Show en vivo de 60 minutos con interacción y repertorio bailable.");
+  const [bookingStatus, setBookingStatus] = useState("Disponible para Fechas & Giras 2026");
+  const [youtubeVideoId, setYoutubeVideoId] = useState("TlTuiVFTb0g");
+  const [youtubeVideoTitle, setYoutubeVideoTitle] = useState("Lanzamiento Oficial");
+  const [socialYoutube, setSocialYoutube] = useState("");
+  const [socialTiktok, setSocialTiktok] = useState("");
+  const [socialFacebook, setSocialFacebook] = useState("");
+  const [socialSpotify, setSocialSpotify] = useState("");
 
-  // Lista de canciones del artista en edición
-  const [artistTracks, setArtistTracks] = useState<Track[]>([]);
-  const [newTrackTitle, setNewTrackTitle] = useState("");
-  const [newTrackAudioUrl, setNewTrackAudioUrl] = useState("");
-  const [newTrackDuration, setNewTrackDuration] = useState("3:00");
+  // Estado de subida de música
+  const [targetArtistId, setTargetArtistId] = useState<string>(artists[0]?.id || "");
+  const [trackTitle, setTrackTitle] = useState("");
+  const [trackAudioUrl, setTrackAudioUrl] = useState("");
+  const [trackDuration, setTrackDuration] = useState("3:25");
+  const [trackCoverUrl, setTrackCoverUrl] = useState("");
+  const [trackYear, setTrackYear] = useState("2026");
+
+  if (!isOpen) return null;
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim().toLowerCase() === "djwilormaestra@gmail.com" && password === "Djwilor@") {
+    if (emailInput.trim().toLowerCase() === "djwilormaestra@gmail.com" && passwordInput === "Djwilor@") {
       setIsAuthenticated(true);
-      localStorage.setItem("selva_admin_session", "true");
-      setLoginError("");
+      setAuthError("");
+      try {
+        localStorage.setItem("selva_admin_session", "true");
+      } catch {}
     } else {
-      setLoginError("Credenciales incorrectas. Verifique el correo y la contraseña.");
+      setAuthError("Credenciales no válidas. Ingrese djwilormaestra@gmail.com y la clave maestra.");
     }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem("selva_admin_session");
+    try {
+      localStorage.removeItem("selva_admin_session");
+    } catch {}
   };
 
-  const handleOpenCreate = () => {
-    setEditingArtist(null);
+  // Cargar datos para edición de artista
+  const handleStartEditArtist = (art: Artist) => {
+    setEditingArtistId(art.id);
+    setName(art.name);
+    setRole(art.role);
+    setCategory(art.category);
+    setGenre(art.genre);
+    setLocation(art.location);
+    setPhoto(art.photo);
+    setGallery(art.gallery || [art.photo]);
+    setBio(art.bio);
+    setShowFormat(art.showFormat);
+    setBookingStatus(art.bookingStatus);
+    setYoutubeVideoId(art.featuredTrack?.youtubeId || "TlTuiVFTb0g");
+    setYoutubeVideoTitle(art.featuredTrack?.title || "Lanzamiento");
+    setSocialYoutube(art.socials?.find((s) => s.platform.toLowerCase() === "youtube")?.url || "");
+    setSocialTiktok(art.socials?.find((s) => s.platform.toLowerCase() === "tiktok")?.url || "");
+    setSocialFacebook(art.socials?.find((s) => s.platform.toLowerCase() === "facebook")?.url || "");
+    setSocialSpotify(art.socials?.find((s) => s.platform.toLowerCase() === "spotify")?.url || "");
+  };
+
+  const handleResetArtistForm = () => {
+    setEditingArtistId(null);
     setName("");
-    setRole("Vocalista · Artista del Sello");
-    setCategory("vocal");
-    setGenre("Electro Tumbado / Urbano");
-    setLocation("Bolivia");
-    setPhoto("https://i.ytimg.com/vi/TlTuiVFTb0g/hqdefault.jpg");
+    setRole("");
+    setCategory("dj");
+    setGenre("");
+    setLocation("Trópico de Cochabamba, Bolivia");
+    setPhoto("");
+    setGallery([]);
     setBio("");
-    setShowFormat("Show en vivo para discotecas y festivales (45 a 60 min).");
-    setBookingStatus("Disponible para Contrataciones");
-    setFeaturedTitle("");
-    setFeaturedYoutubeId("TlTuiVFTb0g");
-    setArtistTracks([]);
-    setIsFormOpen(true);
+    setShowFormat("Show en vivo de 60 minutos con interacción y repertorio bailable.");
+    setBookingStatus("Disponible para Fechas & Giras 2026");
+    setYoutubeVideoId("TlTuiVFTb0g");
+    setYoutubeVideoTitle("Lanzamiento Oficial");
+    setSocialYoutube("");
+    setSocialTiktok("");
+    setSocialFacebook("");
+    setSocialSpotify("");
   };
 
-  const handleOpenEdit = (artist: Artist) => {
-    setEditingArtist(artist);
-    setName(artist.name);
-    setRole(artist.role);
-    setCategory(artist.category);
-    setGenre(artist.genre);
-    setLocation(artist.location);
-    setPhoto(artist.photo);
-    setBio(artist.bio);
-    setShowFormat(artist.showFormat);
-    setBookingStatus(artist.bookingStatus);
-    setFeaturedTitle(artist.featuredTrack.title);
-    setFeaturedYoutubeId(artist.featuredTrack.youtubeId);
-    setArtistTracks(artist.tracks || []);
-    setIsFormOpen(true);
-  };
-
-  const handleDeleteArtist = (artistId: string) => {
-    if (window.confirm("¿Seguro que deseas eliminar este artista del catálogo?")) {
-      const updated = artists.filter((a) => a.id !== artistId);
-      onSaveArtists(updated);
+  const handleAddGalleryUrl = () => {
+    if (newGalleryUrl.trim()) {
+      setGallery((prev) => [...prev, newGalleryUrl.trim()]);
+      setNewGalleryUrl("");
     }
   };
 
-  const handleAddTrack = () => {
-    if (!newTrackTitle.trim()) return;
-    const newTrack: Track = {
-      id: "track-" + Date.now(),
-      title: newTrackTitle.trim(),
-      artist: name || "SELVA MUSIC",
-      duration: newTrackDuration.trim() || "3:00",
-      audioUrl: newTrackAudioUrl.trim() || defaultDemoAudio,
-      coverUrl: photo || "https://i.ytimg.com/vi/TlTuiVFTb0g/hqdefault.jpg",
-      year: "2026",
-    };
-    setArtistTracks([...artistTracks, newTrack]);
-    setNewTrackTitle("");
-    setNewTrackAudioUrl("");
-  };
-
-  const handleRemoveTrack = (trackId: string) => {
-    setArtistTracks(artistTracks.filter((t) => t.id !== trackId));
+  const handleRemoveGalleryUrl = (index: number) => {
+    setGallery((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSaveArtist = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    const artistData: Artist = {
-      id: editingArtist ? editingArtist.id : "artist-" + Date.now(),
-      name: name.trim(),
-      role: role.trim() || "Artista Oficial",
-      category,
-      genre: genre.trim() || "Urbano / Tropical",
-      location: location.trim() || "Bolivia",
-      photo: photo.trim() || "https://i.ytimg.com/vi/TlTuiVFTb0g/hqdefault.jpg",
-      bio: bio.trim() || `Artista del sello SELVA MUSIC Group, representante del sonido urbano boliviano.`,
-      showFormat: showFormat.trim() || "Show en vivo (45 a 60 min).",
-      bookingStatus: bookingStatus.trim() || "Disponible para Contrataciones",
-      featuredTrack: {
-        title: featuredTitle.trim() || "Lanzamiento Oficial",
-        format: "Single Oficial · SELVA MUSIC",
-        youtubeId: featuredYoutubeId.trim() || "TlTuiVFTb0g",
-        youtubeUrl: `https://www.youtube.com/watch?v=${featuredYoutubeId.trim() || "TlTuiVFTb0g"}`,
-      },
-      highlights: [
-        `Artista integrante de SELVA MUSIC Group`,
-        `Producciones y lanzamientos disponibles en plataformas`,
-        `Show en vivo de alta energía`,
-      ],
-      socials: [
-        { platform: "YouTube", url: "https://www.youtube.com/@Wilordj" },
-        { platform: "TikTok", url: "https://www.tiktok.com/@djwilor" },
-      ],
-      tracks: artistTracks.length > 0 ? artistTracks : [
-        {
-          id: "def-tr-" + Date.now(),
-          title: featuredTitle.trim() || name.trim() + " - Estreno",
-          artist: name.trim(),
-          duration: "3:00",
-          audioUrl: defaultDemoAudio,
-          coverUrl: photo.trim() || "https://i.ytimg.com/vi/TlTuiVFTb0g/hqdefault.jpg",
-          year: "2026",
-        },
-      ],
-    };
+    const socials = [];
+    if (socialYoutube.trim()) socials.push({ platform: "YouTube", url: socialYoutube.trim() });
+    if (socialTiktok.trim()) socials.push({ platform: "TikTok", url: socialTiktok.trim() });
+    if (socialFacebook.trim()) socials.push({ platform: "Facebook", url: socialFacebook.trim() });
+    if (socialSpotify.trim()) socials.push({ platform: "Spotify", url: socialSpotify.trim() });
 
-    let updatedList: Artist[];
-    if (editingArtist) {
-      updatedList = artists.map((a) => (a.id === editingArtist.id ? artistData : a));
+    const cleanGallery = gallery.length > 0 ? gallery : [photo || "./assets/hero-gta-tropico.jpg"];
+
+    if (editingArtistId) {
+      const updated = artists.map((art) => {
+        if (art.id === editingArtistId) {
+          return {
+            ...art,
+            name: name.trim(),
+            role: role.trim() || "Artista Oficial",
+            category,
+            genre: genre.trim() || "Música Urbana / Tropical",
+            location: location.trim() || "Bolivia",
+            photo: photo.trim() || art.photo,
+            gallery: cleanGallery,
+            bio: bio.trim() || art.bio,
+            showFormat: showFormat.trim() || art.showFormat,
+            bookingStatus: bookingStatus.trim() || art.bookingStatus,
+            featuredTrack: {
+              title: youtubeVideoTitle.trim() || "Videoclip Oficial",
+              format: "Lanzamiento SELVA MUSIC",
+              youtubeId: youtubeVideoId.trim(),
+              youtubeUrl: `https://www.youtube.com/watch?v=${youtubeVideoId.trim()}`,
+            },
+            socials,
+          };
+        }
+        return art;
+      });
+      onSaveArtists(updated);
+      handleResetArtistForm();
+      alert("¡Artista actualizado con éxito!");
     } else {
-      updatedList = [...artists, artistData];
+      const newArtistId = name.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Date.now().toString().slice(-4);
+      const newArtist: Artist = {
+        id: newArtistId,
+        name: name.trim(),
+        role: role.trim() || "Artista Exclusivo SELVA MUSIC",
+        category,
+        genre: genre.trim() || "Electro Tumbado / Tropical",
+        location: location.trim() || "Trópico de Cochabamba, Bolivia",
+        photo: photo.trim() || "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&auto=format&fit=crop&q=80",
+        gallery: cleanGallery,
+        bio: bio.trim() || "Artista perteneciente al sello discográfico independiente SELVA MUSIC Group.",
+        featuredTrack: {
+          title: youtubeVideoTitle.trim() || "Videoclip Oficial",
+          format: "Lanzamiento SELVA MUSIC",
+          youtubeId: youtubeVideoId.trim() || "TlTuiVFTb0g",
+          youtubeUrl: `https://www.youtube.com/watch?v=${youtubeVideoId.trim() || "TlTuiVFTb0g"}`,
+        },
+        highlights: [
+          "Producción integral y mastering con SELVA MUSIC Group",
+          "Repertorio adaptado para discotecas, eventos y festivales",
+          "Presencia y difusión en plataformas digitales oficiales",
+        ],
+        showFormat: showFormat.trim(),
+        bookingStatus: bookingStatus.trim(),
+        socials,
+        tracks: [],
+      };
+      onSaveArtists([...artists, newArtist]);
+      handleResetArtistForm();
+      alert(`¡Artista "${name}" registrado exitosamente en el catálogo!`);
     }
-
-    onSaveArtists(updatedList);
-    setIsFormOpen(false);
   };
 
-  if (!isOpen) return null;
+  const handleDeleteArtist = (id: string) => {
+    if (confirm("¿Estás seguro de dar de baja a este artista del catálogo?")) {
+      onSaveArtists(artists.filter((a) => a.id !== id));
+    }
+  };
+
+  // Subida de audio local mediante FileReader / Blob URL
+  const handleLocalAudioFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const blobUrl = URL.createObjectURL(file);
+      setTrackAudioUrl(blobUrl);
+      if (!trackTitle) {
+        setTrackTitle(file.name.replace(/\.[^/.]+$/, ""));
+      }
+    }
+  };
+
+  const handleAddTrack = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!trackTitle.trim() || !trackAudioUrl.trim()) {
+      alert("Por favor ingresa el título de la canción y sube o pega el archivo de audio.");
+      return;
+    }
+
+    const targetArtist = artists.find((a) => a.id === targetArtistId) || artists[0];
+    const newTrack: Track = {
+      id: "track-" + Date.now(),
+      title: trackTitle.trim(),
+      artist: targetArtist.name,
+      duration: trackDuration.trim() || "3:30",
+      audioUrl: trackAudioUrl.trim(),
+      coverUrl: trackCoverUrl.trim() || targetArtist.photo,
+      year: trackYear.trim() || "2026",
+    };
+
+    const updated = artists.map((a) => {
+      if (a.id === targetArtist.id) {
+        return {
+          ...a,
+          tracks: [...(a.tracks || []), newTrack],
+        };
+      }
+      return a;
+    });
+
+    onSaveArtists(updated);
+    setTrackTitle("");
+    setTrackAudioUrl("");
+    setTrackCoverUrl("");
+    alert(`¡Pista "${newTrack.title}" añadida a la playlist de ${targetArtist.name} y al reproductor continuo global!`);
+  };
+
+  const handleDeleteTrack = (artistId: string, trackId: string) => {
+    const updated = artists.map((a) => {
+      if (a.id === artistId) {
+        return {
+          ...a,
+          tracks: (a.tracks || []).filter((t) => t.id !== trackId),
+        };
+      }
+      return a;
+    });
+    onSaveArtists(updated);
+  };
+
+  // Actualización de estado en el calendario
+  const handleUpdateBookingStatus = (bookingId: string, status: EventBooking["status"]) => {
+    const updated = bookings.map((b) => (b.id === bookingId ? { ...b, status } : b));
+    onSaveBookings(updated);
+  };
+
+  const handleDeleteBooking = (bookingId: string) => {
+    if (confirm("¿Deseas eliminar este registro de evento de la agenda?")) {
+      onSaveBookings(bookings.filter((b) => b.id !== bookingId));
+    }
+  };
 
   return (
-    <div className="admin-modal-backdrop" onClick={onClose}>
-      <div className="admin-modal-card" onClick={(e) => e.stopPropagation()}>
-        <button type="button" className="admin-close-btn" onClick={onClose} aria-label="Cerrar panel">
-          <X size={20} />
-        </button>
-
-        {!isAuthenticated ? (
-          /* =================================================================
-             PANTALLA DE LOGIN MAESTRO
-             ================================================================= */
-          <div className="admin-login-box">
-            <div className="admin-icon-ring">
-              <Lock size={32} />
+    <div className="admin-modal-backdrop" role="dialog" aria-modal="true" onClick={onClose}>
+      <div className="admin-modal-container" onClick={(e) => e.stopPropagation()}>
+        {/* Cabecera del Panel */}
+        <div className="admin-modal-header">
+          <div className="admin-header-title">
+            <span className="admin-badge-icon">🌴</span>
+            <div>
+              <h2>PANEL MAESTRO · SELVA MUSIC GROUP</h2>
+              <p>Control Total de Roster, Subida de Música a Playlists y Calendario Anticolisión</p>
             </div>
-            <h2>Acceso Maestro · Sello</h2>
-            <p>Ingresa con la cuenta autorizada de SELVA MUSIC Group para administrar artistas y canciones.</p>
-
-            <form onSubmit={handleLogin} className="admin-login-form">
-              <div className="admin-input-group">
-                <label>Correo Electrónico</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="djwilormaestra@gmail.com"
-                  required
-                />
-              </div>
-
-              <div className="admin-input-group">
-                <label>Contraseña</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-
-              {loginError && <p className="admin-error-text">{loginError}</p>}
-
-              <button type="submit" className="button button-lime admin-submit-btn">
-                <Key size={16} /> Iniciar Sesión de Administrador
-              </button>
-            </form>
           </div>
-        ) : (
-          /* =================================================================
-             PANEL DE ADMINISTRACIÓN MAESTRO
-             ================================================================= */
-          <div className="admin-dashboard">
-            <div className="admin-dash-header">
-              <div>
-                <h2>SELVA MUSIC STUDIO</h2>
-                <p>Gestión de Artistas, Catálogo y Playlists de Audio</p>
+          <div className="admin-header-actions">
+            {isAuthenticated && (
+              <button type="button" onClick={handleLogout} className="admin-btn-logout">
+                <LogOut size={14} /> Cerrar Sesión
+              </button>
+            )}
+            <button type="button" onClick={onClose} className="admin-btn-close" aria-label="Cerrar Panel">
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* Contenido según autenticación */}
+        {!isAuthenticated ? (
+          <div className="admin-login-wrapper">
+            <div className="admin-login-card">
+              <div className="admin-lock-icon">
+                <Lock size={32} />
               </div>
-              <div className="admin-dash-user-actions">
-                <button type="button" className="button button-lime-sm" onClick={handleOpenCreate}>
-                  <UserPlus size={16} /> + Nuevo Artista
-                </button>
-                <button type="button" className="admin-logout-btn" onClick={handleLogout} title="Cerrar Sesión">
-                  <LogOut size={16} /> Salir
-                </button>
-              </div>
-            </div>
+              <h3>Acceso Maestro Restringido</h3>
+              <p>Exclusivo para DJ WILOR y la dirección de SELVA MUSIC Group.</p>
 
-            {isFormOpen ? (
-              /* FORMULARIO DE CREAR / EDITAR ARTISTA */
-              <form onSubmit={handleSaveArtist} className="admin-artist-form">
-                <div className="form-head">
-                  <h3>{editingArtist ? `Editar: ${editingArtist.name}` : "Añadir Nuevo Artista al Sello"}</h3>
-                  <button type="button" className="form-cancel-btn" onClick={() => setIsFormOpen(false)}>
-                    Cancelar
-                  </button>
-                </div>
+              {authError && <div className="admin-alert-error">{authError}</div>}
 
-                <div className="form-grid-2">
-                  <div className="admin-input-group">
-                    <label>Nombre del Artista / Grupo *</label>
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Ej: Emily Escobar"
-                      required
-                    />
-                  </div>
-
-                  <div className="admin-input-group">
-                    <label>Rol o Título</label>
-                    <input
-                      type="text"
-                      value={role}
-                      onChange={(e) => setRole(e.target.value)}
-                      placeholder="Ej: Vocalista · Pop Urbano"
-                    />
-                  </div>
-
-                  <div className="admin-input-group">
-                    <label>Categoría</label>
-                    <select
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value as "dj" | "vocal" | "group")}
-                    >
-                      <option value="vocal">Cantante / Vocalista Urbano</option>
-                      <option value="dj">DJ & Productor</option>
-                      <option value="group">Agrupación / Orquesta en Vivo</option>
-                    </select>
-                  </div>
-
-                  <div className="admin-input-group">
-                    <label>Género Musical</label>
-                    <input
-                      type="text"
-                      value={genre}
-                      onChange={(e) => setGenre(e.target.value)}
-                      placeholder="Ej: Electro Tumbado / Funk Latino"
-                    />
-                  </div>
-
-                  <div className="admin-input-group">
-                    <label>Origen / Ubicación</label>
-                    <input
-                      type="text"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      placeholder="Ej: Cochabamba, Bolivia"
-                    />
-                  </div>
-
-                  <div className="admin-input-group">
-                    <label>URL de Foto del Artista</label>
-                    <input
-                      type="text"
-                      value={photo}
-                      onChange={(e) => setPhoto(e.target.value)}
-                      placeholder="https://... o ./assets/..."
-                    />
-                  </div>
-                </div>
-
-                <div className="admin-input-group">
-                  <label>Biografía & Trayectoria</label>
-                  <textarea
-                    rows={3}
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    placeholder="Escribe la historia, logros y estilo del artista..."
+              <form onSubmit={handleLogin} className="admin-form">
+                <div className="form-group">
+                  <label>Correo Maestro</label>
+                  <input
+                    type="email"
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder="djwilormaestra@gmail.com"
+                    required
                   />
                 </div>
+                <div className="form-group">
+                  <label>Contraseña</label>
+                  <input
+                    type="password"
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+                <button type="submit" className="button button-lime w-full">
+                  Ingresar al Sistema Maestro
+                </button>
+              </form>
+            </div>
+          </div>
+        ) : (
+          <div className="admin-content-layout">
+            {/* Navegación de Tabs */}
+            <div className="admin-nav-tabs">
+              <button
+                type="button"
+                className={`admin-nav-tab ${activeTab === "artists" ? "is-active" : ""}`}
+                onClick={() => setActiveTab("artists")}
+              >
+                <Users size={16} /> Artistas & Perfiles ({artists.length})
+              </button>
+              <button
+                type="button"
+                className={`admin-nav-tab ${activeTab === "music" ? "is-active" : ""}`}
+                onClick={() => setActiveTab("music")}
+              >
+                <Music2 size={16} /> Gestor de Música & Playlists
+              </button>
+              <button
+                type="button"
+                className={`admin-nav-tab ${activeTab === "calendar" ? "is-active" : ""}`}
+                onClick={() => setActiveTab("calendar")}
+              >
+                <Calendar size={16} /> Calendario de Shows & Cruces ({bookings.length})
+              </button>
+            </div>
 
-                <div className="form-grid-2">
-                  <div className="admin-input-group">
-                    <label>Formato de Show en Vivo</label>
-                    <input
-                      type="text"
-                      value={showFormat}
-                      onChange={(e) => setShowFormat(e.target.value)}
-                      placeholder="Ej: Show vocal en vivo con bailarinas (45 min)"
-                    />
+            {/* TAB 1: ARTISTAS */}
+            {activeTab === "artists" && (
+              <div className="admin-tab-grid">
+                {/* Formulario de Artista */}
+                <div className="admin-panel-card">
+                  <div className="card-header-flex">
+                    <h4>{editingArtistId ? "✏️ Editar Perfil de Artista" : "➕ Registrar Nuevo Artista"}</h4>
+                    {editingArtistId && (
+                      <button type="button" onClick={handleResetArtistForm} className="text-btn">
+                        Cancelar edición
+                      </button>
+                    )}
                   </div>
 
-                  <div className="admin-input-group">
-                    <label>YouTube ID del Video Destacado</label>
-                    <input
-                      type="text"
-                      value={featuredYoutubeId}
-                      onChange={(e) => setFeaturedYoutubeId(e.target.value)}
-                      placeholder="Ej: TlTuiVFTb0g"
-                    />
-                  </div>
+                  <form onSubmit={handleSaveArtist} className="admin-form-compact">
+                    <div className="form-row">
+                      <div className="form-group flex-2">
+                        <label>Nombre Artístico *</label>
+                        <input
+                          type="text"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="Ej: DJ WILOR / Emily Escobar"
+                          required
+                        />
+                      </div>
+                      <div className="form-group flex-1">
+                        <label>Categoría</label>
+                        <select
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value as any)}
+                        >
+                          <option value="dj">DJ / Productor</option>
+                          <option value="vocal">Vocalista / Solista</option>
+                          <option value="group">Grupo / Orquesta</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="form-row">
+                      <div className="form-group flex-1">
+                        <label>Rol en el Sello</label>
+                        <input
+                          type="text"
+                          value={role}
+                          onChange={(e) => setRole(e.target.value)}
+                          placeholder="Ej: Artista Exclusivo · Cantante"
+                        />
+                      </div>
+                      <div className="form-group flex-1">
+                        <label>Géneros Musicales</label>
+                        <input
+                          type="text"
+                          value={genre}
+                          onChange={(e) => setGenre(e.target.value)}
+                          placeholder="Ej: Cumbia Sureña / Fusión"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-row">
+                      <div className="form-group flex-1">
+                        <label>Origen / Localidad</label>
+                        <input
+                          type="text"
+                          value={location}
+                          onChange={(e) => setLocation(e.target.value)}
+                          placeholder="Chapare, Cochabamba, Bolivia"
+                        />
+                      </div>
+                      <div className="form-group flex-1">
+                        <label>Foto Principal (URL)</label>
+                        <input
+                          type="url"
+                          value={photo}
+                          onChange={(e) => setPhoto(e.target.value)}
+                          placeholder="https://... o ./assets/..."
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {/* Gestión de Álbum de Fotos */}
+                    <div className="admin-subcard">
+                      <label className="subcard-title">
+                        <ImageIcon size={14} /> Álbum de Fotos del Perfil ({gallery.length})
+                      </label>
+                      <div className="subcard-input-row">
+                        <input
+                          type="url"
+                          value={newGalleryUrl}
+                          onChange={(e) => setNewGalleryUrl(e.target.value)}
+                          placeholder="Pegar URL de foto para el álbum..."
+                        />
+                        <button type="button" onClick={handleAddGalleryUrl} className="button button-small">
+                          + Añadir Foto
+                        </button>
+                      </div>
+                      {gallery.length > 0 && (
+                        <div className="admin-gallery-strip">
+                          {gallery.map((imgUrl, i) => (
+                            <div key={i} className="gallery-thumb-item">
+                              <img src={imgUrl} alt={`Foto ${i}`} />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveGalleryUrl(i)}
+                                className="gallery-thumb-remove"
+                                title="Eliminar foto"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="form-group">
+                      <label>Biografía & Trayectoria</label>
+                      <textarea
+                        rows={3}
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        placeholder="Descripción detallada de la carrera, colaboraciones y propuesta..."
+                      />
+                    </div>
+
+                    <div className="form-row">
+                      <div className="form-group flex-1">
+                        <label>Formato de Show</label>
+                        <input
+                          type="text"
+                          value={showFormat}
+                          onChange={(e) => setShowFormat(e.target.value)}
+                          placeholder="Ej: Show en vivo 60 min"
+                        />
+                      </div>
+                      <div className="form-group flex-1">
+                        <label>Estado de Booking</label>
+                        <input
+                          type="text"
+                          value={bookingStatus}
+                          onChange={(e) => setBookingStatus(e.target.value)}
+                          placeholder="Disponible para Giras"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-row">
+                      <div className="form-group flex-1">
+                        <label>YouTube ID (Videoclip)</label>
+                        <input
+                          type="text"
+                          value={youtubeVideoId}
+                          onChange={(e) => setYoutubeVideoId(e.target.value)}
+                          placeholder="Ej: TlTuiVFTb0g"
+                        />
+                      </div>
+                      <div className="form-group flex-1">
+                        <label>Título del Video</label>
+                        <input
+                          type="text"
+                          value={youtubeVideoTitle}
+                          onChange={(e) => setYoutubeVideoTitle(e.target.value)}
+                          placeholder="Ej: Vuelve Vuelve - Oficial"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Redes Sociales */}
+                    <div className="form-row">
+                      <input
+                        type="url"
+                        value={socialYoutube}
+                        onChange={(e) => setSocialYoutube(e.target.value)}
+                        placeholder="Canal YouTube (URL)"
+                        className="input-sub"
+                      />
+                      <input
+                        type="url"
+                        value={socialTiktok}
+                        onChange={(e) => setSocialTiktok(e.target.value)}
+                        placeholder="Perfil TikTok (URL)"
+                        className="input-sub"
+                      />
+                    </div>
+                    <div className="form-row">
+                      <input
+                        type="url"
+                        value={socialFacebook}
+                        onChange={(e) => setSocialFacebook(e.target.value)}
+                        placeholder="Página Facebook (URL)"
+                        className="input-sub"
+                      />
+                      <input
+                        type="url"
+                        value={socialSpotify}
+                        onChange={(e) => setSocialSpotify(e.target.value)}
+                        placeholder="Spotify Artista (URL)"
+                        className="input-sub"
+                      />
+                    </div>
+
+                    <button type="submit" className="button button-lime w-full mt-2">
+                      {editingArtistId ? "Guardar Cambios del Artista" : "+ Registrar Artista en SELVA MUSIC"}
+                    </button>
+                  </form>
                 </div>
 
-                {/* GESTIÓN DE CANCIONES DEL ARTISTA */}
-                <div className="admin-tracks-subform">
-                  <h4>
-                    <Music size={16} /> Canciones & Playlist del Artista ({artistTracks.length})
-                  </h4>
-                  <p>Añade los temas que se reproducirán en su perfil y en la playlist general de la web.</p>
+                {/* Catálogo Actual de Artistas */}
+                <div className="admin-panel-card">
+                  <h4>Catálogo Activo de Artistas ({artists.length})</h4>
+                  <p className="card-subtext">Selecciona un artista para modificar sus datos o eliminarlo.</p>
 
-                  <div className="add-track-inline">
-                    <input
-                      type="text"
-                      placeholder="Título de la canción"
-                      value={newTrackTitle}
-                      onChange={(e) => setNewTrackTitle(e.target.value)}
-                    />
-                    <input
-                      type="text"
-                      placeholder="URL del archivo MP3 / WAV"
-                      value={newTrackAudioUrl}
-                      onChange={(e) => setNewTrackAudioUrl(e.target.value)}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Duración (3:15)"
-                      value={newTrackDuration}
-                      onChange={(e) => setNewTrackDuration(e.target.value)}
-                      className="track-dur-input"
-                    />
-                    <button type="button" className="button button-lime-sm" onClick={handleAddTrack}>
-                      <Plus size={14} /> Añadir
-                    </button>
-                  </div>
-
-                  <div className="tracks-list-preview">
-                    {artistTracks.map((tr) => (
-                      <div key={tr.id} className="track-preview-pill">
-                        <Music size={13} />
-                        <span>{tr.title}</span>
-                        <small>{tr.duration}</small>
-                        <button
-                          type="button"
-                          className="track-delete-icon"
-                          onClick={() => handleRemoveTrack(tr.id)}
-                          aria-label="Eliminar canción"
-                        >
-                          <X size={13} />
-                        </button>
+                  <div className="admin-artist-list">
+                    {artists.map((art) => (
+                      <div key={art.id} className="admin-artist-card">
+                        <img src={art.photo} alt={art.name} className="artist-thumb" />
+                        <div className="artist-info">
+                          <h5>{art.name}</h5>
+                          <span>{art.role}</span>
+                          <div className="artist-mini-tags">
+                            <small>🎵 {art.tracks?.length || 0} tracks</small>
+                            <small>📸 {art.gallery?.length || 1} fotos</small>
+                            <small>📍 {art.location.split(",")[0]}</small>
+                          </div>
+                        </div>
+                        <div className="artist-actions">
+                          <button
+                            type="button"
+                            onClick={() => handleStartEditArtist(art)}
+                            className="btn-edit"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteArtist(art.id)}
+                            className="btn-delete"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
+              </div>
+            )}
 
-                <div className="form-submit-row">
-                  <button type="submit" className="button button-lime">
-                    <Check size={16} /> Guardar Artista en el Roster
-                  </button>
-                </div>
-              </form>
-            ) : (
-              /* LISTA DE ARTISTAS REGISTRADOS */
-              <div className="admin-artists-list">
-                <div className="admin-list-summary">
-                  <span>{artists.length} Artistas en el catálogo oficial</span>
-                </div>
+            {/* TAB 2: GESTOR DE MÚSICA & PLAYLISTS */}
+            {activeTab === "music" && (
+              <div className="admin-tab-grid">
+                {/* Formulario de Subida de Música */}
+                <div className="admin-panel-card">
+                  <h4>🎧 Añadir Canción a Playlists</h4>
+                  <p className="card-subtext">
+                    Sube un archivo de audio directamente desde tu dispositivo o ingresa un enlace directo. Se añadirá a la playlist personal del artista y al reproductor general.
+                  </p>
 
-                <div className="admin-cards-scroll">
-                  {artists.map((art) => (
-                    <div key={art.id} className="admin-artist-row">
-                      <img src={art.photo} alt="" className="admin-row-thumb" />
-                      <div className="admin-row-info">
-                        <strong>{art.name}</strong>
-                        <span>{art.role}</span>
-                        <small>
-                          {art.genre} • {art.tracks?.length || 0} canciones registradas
-                        </small>
+                  <form onSubmit={handleAddTrack} className="admin-form-compact">
+                    <div className="form-group">
+                      <label>Selecciona el Artista *</label>
+                      <select
+                        value={targetArtistId}
+                        onChange={(e) => setTargetArtistId(e.target.value)}
+                        required
+                      >
+                        {artists.map((art) => (
+                          <option key={art.id} value={art.id}>
+                            {art.name} ({art.role})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Título de la Canción / Mix *</label>
+                      <input
+                        type="text"
+                        value={trackTitle}
+                        onChange={(e) => setTrackTitle(e.target.value)}
+                        placeholder="Ej: Mix Éxitos Chapareños 2026"
+                        required
+                      />
+                    </div>
+
+                    {/* Subida Directa de Archivo de Audio Local */}
+                    <div className="admin-upload-dropzone">
+                      <FileAudio size={24} />
+                      <label htmlFor="audioFileInput" className="dropzone-label">
+                        <strong>Subir Archivo de Audio (MP3, WAV, AAC, M4A)</strong>
+                        <span>Haz clic para elegir un archivo de tu computadora o teléfono</span>
+                      </label>
+                      <input
+                        id="audioFileInput"
+                        type="file"
+                        accept="audio/*"
+                        onChange={handleLocalAudioFile}
+                        className="dropzone-input"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>o Enlace Directo de Audio (MP3 / CDN)</label>
+                      <input
+                        type="text"
+                        value={trackAudioUrl}
+                        onChange={(e) => setTrackAudioUrl(e.target.value)}
+                        placeholder="https://... o archivo cargado arriba"
+                        required
+                      />
+                    </div>
+
+                    <div className="form-row">
+                      <div className="form-group flex-1">
+                        <label>Duración (Ej: 3:25)</label>
+                        <input
+                          type="text"
+                          value={trackDuration}
+                          onChange={(e) => setTrackDuration(e.target.value)}
+                          placeholder="3:25"
+                        />
                       </div>
-                      <div className="admin-row-actions">
-                        <button
-                          type="button"
-                          className="admin-edit-action"
-                          onClick={() => handleOpenEdit(art)}
-                        >
-                          <Edit3 size={15} /> Editar
-                        </button>
-                        <button
-                          type="button"
-                          className="admin-delete-action"
-                          onClick={() => handleDeleteArtist(art.id)}
-                        >
-                          <Trash2 size={15} /> Eliminar
-                        </button>
+                      <div className="form-group flex-1">
+                        <label>Año de Lanzamiento</label>
+                        <input
+                          type="text"
+                          value={trackYear}
+                          onChange={(e) => setTrackYear(e.target.value)}
+                          placeholder="2026"
+                        />
                       </div>
                     </div>
-                  ))}
+
+                    <div className="form-group">
+                      <label>Carátula de la Canción (Opcional)</label>
+                      <input
+                        type="url"
+                        value={trackCoverUrl}
+                        onChange={(e) => setTrackCoverUrl(e.target.value)}
+                        placeholder="https://... (por defecto usa la foto del artista)"
+                      />
+                    </div>
+
+                    <button type="submit" className="button button-lime w-full mt-2">
+                      + Publicar Canción en Playlists
+                    </button>
+                  </form>
+                </div>
+
+                {/* Lista de Canciones por Artista */}
+                <div className="admin-panel-card">
+                  <h4>Playlists por Artista & Global</h4>
+                  <p className="card-subtext">Todas estas pistas se reproducen en el reproductor continuo flotante del sitio.</p>
+
+                  <div className="admin-track-roster">
+                    {artists.map((art) => (
+                      <div key={art.id} className="artist-track-section">
+                        <div className="artist-track-header">
+                          <img src={art.photo} alt={art.name} />
+                          <div>
+                            <strong>{art.name}</strong>
+                            <span>{art.tracks?.length || 0} canciones registradas</span>
+                          </div>
+                        </div>
+
+                        {art.tracks && art.tracks.length > 0 ? (
+                          <div className="track-items-list">
+                            {art.tracks.map((tr) => (
+                              <div key={tr.id} className="admin-track-item">
+                                <div className="track-meta">
+                                  {onPlayTrack && (
+                                    <button
+                                      type="button"
+                                      onClick={() => onPlayTrack(tr)}
+                                      className="btn-play-sm"
+                                      title="Reproducir ahora"
+                                    >
+                                      <Play size={12} fill="currentColor" />
+                                    </button>
+                                  )}
+                                  <strong>{tr.title}</strong>
+                                  <small>({tr.duration})</small>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteTrack(art.id, tr.id)}
+                                  className="btn-delete"
+                                  title="Eliminar pista"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="empty-track-msg">Sin canciones añadidas aún.</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: CALENDARIO DE SHOWS & CRUCES DE FECHA */}
+            {activeTab === "calendar" && (
+              <div className="admin-panel-card full-width">
+                <div className="calendar-header-flex">
+                  <div>
+                    <h4>📅 Calendario Inteligente de Shows & Sistema Anticolisión</h4>
+                    <p className="card-subtext">
+                      Las reservas de clientes llegan automáticamente aquí. El sistema detecta si un mismo artista tiene 2 shows programados el mismo día o en diferentes ciudades para evitar cancelaciones y reclamos.
+                    </p>
+                  </div>
+                  <div className="calendar-stats-pill">
+                    <strong>Total Registros:</strong> {bookings.length}
+                  </div>
+                </div>
+
+                <div className="admin-bookings-list">
+                  {bookings.length === 0 ? (
+                    <div className="empty-bookings-box">
+                      <Calendar size={36} />
+                      <p>No hay solicitudes de fechas registradas todavía.</p>
+                    </div>
+                  ) : (
+                    bookings.map((b) => {
+                      // Comprobar conflicto con otras reservas en la misma fecha
+                      const hasClash = bookings.some(
+                        (other) =>
+                          other.id !== b.id &&
+                          other.artistId === b.artistId &&
+                          other.date === b.date &&
+                          other.status !== "conflict"
+                      );
+
+                      const conflictingOther = hasClash
+                        ? bookings.find(
+                            (other) =>
+                              other.id !== b.id &&
+                              other.artistId === b.artistId &&
+                              other.date === b.date
+                          )
+                        : null;
+
+                      return (
+                        <div
+                          key={b.id}
+                          className={`booking-card-item ${hasClash ? "has-conflict-border" : ""}`}
+                        >
+                          <div className="booking-card-main">
+                            <div className="booking-meta-head">
+                              <span className="booking-artist-tag">{b.artistName}</span>
+                              <span className="booking-date-badge">
+                                📅 {b.date} · ⏰ {b.time}
+                              </span>
+                              <span className={`booking-status-badge status-${b.status}`}>
+                                {b.status === "confirmed" && "Confirmado"}
+                                {b.status === "pending" && "Pendiente"}
+                                {b.status === "conflict" && "Alerta de Cruce"}
+                              </span>
+                            </div>
+
+                            {hasClash && (
+                              <div className="booking-clash-warning">
+                                <AlertTriangle size={15} />
+                                <span>
+                                  <strong>¡ALERTA DE CRUCE DE FECHA!</strong> {b.artistName} tiene otra presentación programada el {b.date} en {conflictingOther?.city} ({conflictingOther?.clientName}).
+                                </span>
+                              </div>
+                            )}
+
+                            <div className="booking-details-grid">
+                              <div><strong>Contratante:</strong> {b.clientName}</div>
+                              <div><strong>Teléfono:</strong> <a href={`https://wa.me/${b.clientPhone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">{b.clientPhone}</a></div>
+                              <div><strong>Ciudad / Lugar:</strong> {b.city}</div>
+                              <div><strong>Tipo de Evento:</strong> {b.eventType}</div>
+                            </div>
+
+                            {b.notes && (
+                              <div className="booking-notes-row">
+                                <em>Observaciones:</em> {b.notes}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="booking-card-actions">
+                            <select
+                              value={b.status}
+                              onChange={(e) =>
+                                handleUpdateBookingStatus(b.id, e.target.value as any)
+                              }
+                              className="booking-status-select"
+                            >
+                              <option value="pending">Marcar Pendiente</option>
+                              <option value="confirmed">Confirmar Fecha</option>
+                              <option value="conflict">Marcar Conflicto</option>
+                            </select>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteBooking(b.id)}
+                              className="btn-delete-booking"
+                              title="Eliminar solicitud"
+                            >
+                              <Trash2 size={14} /> Eliminar
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             )}
