@@ -5,7 +5,7 @@ import AdminPanel from "@/components/AdminPanel";
 import AudioPlayer from "@/components/AudioPlayer";
 import BookingModal from "@/components/BookingModal";
 import SiteHeader from "@/components/SiteHeader";
-import { contact, extractAllTracks, initialBookings, milestones, rosterArtists, sealLink, socialLinks, works, type Artist, type EventBooking, type Track } from "@/lib/wilorContent";
+import { contact, extractAllTracks, initialBookings, milestones, rosterArtists, ROSTER_VERSION, sealLink, socialLinks, works, type Artist, type EventBooking, type Track } from "@/lib/wilorContent";
 
 const heroImage = "./assets/hero-gta-tropico.jpg";
 const portraitImage = "./assets/wilor-profile.jpg";
@@ -63,11 +63,20 @@ function FeaturedPlayer() {
 export default function Home() {
   const [artists, setArtists] = useState<Artist[]>(() => {
     try {
-      const saved = localStorage.getItem("selva_artists_roster");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      const storedVersion = localStorage.getItem("selva_roster_version");
+      if (storedVersion === ROSTER_VERSION) {
+        const saved = localStorage.getItem("selva_artists_roster");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
       }
+    } catch (e) {}
+
+    // Si es primera vez o una versión antigua, se actualiza al catálogo original verificado
+    try {
+      localStorage.setItem("selva_roster_version", ROSTER_VERSION);
+      localStorage.setItem("selva_artists_roster", JSON.stringify(rosterArtists));
     } catch (e) {}
     return rosterArtists;
   });
