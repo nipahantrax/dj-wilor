@@ -1,4 +1,4 @@
-import { ArrowDownRight, ArrowRight, ArrowUpRight, Calendar, CheckCircle2, Disc3, Headphones, Image as ImageIcon, Lock, MapPin, MessageCircle, Mic2, Music2, Play, Radio, Sparkles, Users, X } from "lucide-react";
+import { ArrowDownRight, ArrowRight, ArrowUpRight, Calendar, CheckCircle2, Disc3, Headphones, Image as ImageIcon, Lock, MapPin, MessageCircle, Mic2, Music2, Pause, Play, Radio, RotateCcw, RotateCw, SkipBack, SkipForward, Sparkles, Users, X } from "lucide-react";
 import { useState } from "react";
 import type { ReactNode, SyntheticEvent } from "react";
 import AdminPanel from "@/components/AdminPanel";
@@ -148,6 +148,29 @@ export default function Home() {
     const prevIndex = (currentIndex - 1 + allTracks.length) % allTracks.length;
     setCurrentTrack(allTracks[prevIndex]);
     setIsPlaying(true);
+  };
+
+  // Handlers para el Reproductor Privado del Artista
+  const handleArtistNextTrack = (artistTracks: Track[]) => {
+    if (!artistTracks || artistTracks.length === 0) return;
+    const currentIndex = artistTracks.findIndex((t) => t.id === currentTrack?.id);
+    const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % artistTracks.length : 0;
+    setCurrentTrack(artistTracks[nextIndex]);
+    setIsPlaying(true);
+  };
+
+  const handleArtistPrevTrack = (artistTracks: Track[]) => {
+    if (!artistTracks || artistTracks.length === 0) return;
+    const currentIndex = artistTracks.findIndex((t) => t.id === currentTrack?.id);
+    const prevIndex = currentIndex > 0 ? currentIndex - 1 : artistTracks.length - 1;
+    setCurrentTrack(artistTracks[prevIndex]);
+    setIsPlaying(true);
+  };
+
+  const handleSeekBy = (offsetSeconds: number) => {
+    if (typeof window !== "undefined" && window.selvaAudioPlayer?.seekBy) {
+      window.selvaAudioPlayer.seekBy(offsetSeconds);
+    }
   };
 
   const handleSaveArtists = (updated: Artist[]) => {
@@ -633,43 +656,147 @@ export default function Home() {
               </div>
 
               <div className="artist-modal-col">
-                {/* PLAYLIST DE CANCIONES DEL ARTISTA */}
-                {selectedArtist.tracks && selectedArtist.tracks.length > 0 && (
-                  <div className="artist-playlist-block">
-                    <h4>
-                      <Music2 size={15} /> Playlist del Artista ({selectedArtist.tracks.length})
-                    </h4>
-                    <div className="artist-modal-tracklist">
-                      {selectedArtist.tracks.map((tr, idx) => {
-                        const isCurrent = currentTrack?.id === tr.id;
-                        return (
-                          <div
-                            key={tr.id + idx}
-                            className={`modal-track-item ${isCurrent ? "is-active" : ""}`}
-                            onClick={() => handlePlayTrack(tr)}
-                          >
-                            <span className="modal-track-num">
-                              {isCurrent && isPlaying ? (
-                                <span className="audio-equalizer-sm">
-                                  <i />
-                                  <i />
-                                  <i />
-                                </span>
-                              ) : (
-                                <Play size={12} fill="currentColor" />
-                              )}
-                            </span>
-                            <div className="modal-track-meta">
-                              <strong>{tr.title}</strong>
-                              <span>{tr.artist}</span>
-                            </div>
-                            <span className="modal-track-dur">{tr.duration}</span>
+                {/* REPRODUCTOR PRIVADO EXCLUSIVO DEL ARTISTA (CON CONTROLES COMPLETOS) */}
+                {selectedArtist.tracks && selectedArtist.tracks.length > 0 && (() => {
+                  const activeArtistTrack =
+                    selectedArtist.tracks.find((t) => t.id === currentTrack?.id) ||
+                    selectedArtist.tracks[0];
+                  const isCurrentPlaying = currentTrack?.id === activeArtistTrack.id && isPlaying;
+
+                  return (
+                    <div className="artist-private-deck">
+                      <div className="artist-deck-header">
+                        <div className="flex items-center gap-2">
+                          <span className="deck-live-dot" />
+                          <h4 className="deck-title">
+                            REPRODUCTOR OFICIAL · {selectedArtist.name.toUpperCase()}
+                          </h4>
+                        </div>
+                        <span className="deck-tracks-count">
+                          {selectedArtist.tracks.length} TEMAS
+                        </span>
+                      </div>
+
+                      {/* Consola de Reproducción Activa del Artista */}
+                      <div className="artist-deck-body">
+                        <div className="artist-deck-track-info">
+                          <div className={`artist-deck-disc ${isCurrentPlaying ? "is-spinning" : ""}`}>
+                            <img src={activeArtistTrack.coverUrl} alt={activeArtistTrack.title} />
+                            <div className="deck-disc-hole" />
                           </div>
-                        );
-                      })}
+                          <div className="artist-deck-meta">
+                            <span className="deck-status-badge">
+                              {isCurrentPlaying ? "EN REPRODUCCIÓN AHORA" : "PAUSADO / LISTO"}
+                            </span>
+                            <strong className="deck-track-name">{activeArtistTrack.title}</strong>
+                            <span className="deck-track-dur">Duración oficial: {activeArtistTrack.duration}</span>
+                          </div>
+                        </div>
+
+                        {/* Fila de Controles de Audio del Artista */}
+                        <div className="artist-deck-controls">
+                          {/* Retroceder 10s */}
+                          <button
+                            type="button"
+                            className="deck-ctrl-btn btn-step"
+                            onClick={() => handleSeekBy(-10)}
+                            title="Retroceder 10 segundos"
+                            aria-label="Retroceder 10 segundos"
+                          >
+                            <RotateCcw size={14} />
+                            <small>-10s</small>
+                          </button>
+
+                          {/* Pista Anterior del Artista */}
+                          <button
+                            type="button"
+                            className="deck-ctrl-btn"
+                            onClick={() => handleArtistPrevTrack(selectedArtist.tracks)}
+                            title="Pista anterior del artista"
+                            aria-label="Pista anterior"
+                          >
+                            <SkipBack size={17} />
+                          </button>
+
+                          {/* Play / Pause Principal del Artista */}
+                          <button
+                            type="button"
+                            className="deck-ctrl-btn btn-play-main"
+                            onClick={() => {
+                              if (currentTrack?.id === activeArtistTrack.id) {
+                                handleTogglePlay();
+                              } else {
+                                handlePlayTrack(activeArtistTrack);
+                              }
+                            }}
+                            title={isCurrentPlaying ? "Pausar" : "Reproducir canción"}
+                            aria-label={isCurrentPlaying ? "Pausar" : "Reproducir"}
+                          >
+                            {isCurrentPlaying ? (
+                              <Pause size={18} fill="currentColor" />
+                            ) : (
+                              <Play size={18} fill="currentColor" />
+                            )}
+                          </button>
+
+                          {/* Siguiente Pista del Artista */}
+                          <button
+                            type="button"
+                            className="deck-ctrl-btn"
+                            onClick={() => handleArtistNextTrack(selectedArtist.tracks)}
+                            title="Siguiente pista del artista"
+                            aria-label="Siguiente pista"
+                          >
+                            <SkipForward size={17} />
+                          </button>
+
+                          {/* Adelantar 10s */}
+                          <button
+                            type="button"
+                            className="deck-ctrl-btn btn-step"
+                            onClick={() => handleSeekBy(10)}
+                            title="Adelantar 10 segundos"
+                            aria-label="Adelantar 10 segundos"
+                          >
+                            <RotateCw size={14} />
+                            <small>+10s</small>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Lista de Canciones del Artista */}
+                      <div className="artist-modal-tracklist">
+                        {selectedArtist.tracks.map((tr, idx) => {
+                          const isThisTrackActive = currentTrack?.id === tr.id;
+                          return (
+                            <div
+                              key={tr.id + idx}
+                              className={`modal-track-item ${isThisTrackActive ? "is-active" : ""}`}
+                              onClick={() => handlePlayTrack(tr)}
+                            >
+                              <span className="modal-track-num">
+                                {isThisTrackActive && isPlaying ? (
+                                  <span className="audio-equalizer-sm">
+                                    <i />
+                                    <i />
+                                    <i />
+                                  </span>
+                                ) : (
+                                  <Play size={12} fill="currentColor" />
+                                )}
+                              </span>
+                              <div className="modal-track-meta">
+                                <strong>{tr.title}</strong>
+                                <span>{tr.artist}</span>
+                              </div>
+                              <span className="modal-track-dur">{tr.duration}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 <div className="artist-player-block">
                   <h4>Videoclip / Lanzamiento</h4>
