@@ -11,8 +11,10 @@ import {
   Radio,
   SkipBack,
   SkipForward,
+  Tv,
   Volume2,
   VolumeX,
+  X,
   Youtube,
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
@@ -46,15 +48,15 @@ export default function AudioPlayer({
 }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ytPlayerRef = useRef<any>(null);
-  const ytContainerRef = useRef<HTMLDivElement | null>(null);
 
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(0.85);
+  const [volume, setVolume] = useState(0.9);
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
   const [isYtApiReady, setIsYtApiReady] = useState(false);
-  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [showMonitor, setShowMonitor] = useState(true);
+  const [needsUserUnmute, setNeedsUserUnmute] = useState(false);
 
   const activeTrack = currentTrack || tracks[0];
 
@@ -75,36 +77,45 @@ export default function AudioPlayer({
     };
   }, []);
 
-  // 2. Inicializar o actualizar el reproductor de YouTube
+  // 2. Inicializar o actualizar el reproductor de YouTube en el mini-monitor
   useEffect(() => {
-    if (!isYtApiReady) return;
+    if (!isYtApiReady || !activeTrack?.youtubeId) return;
 
     if (!ytPlayerRef.current) {
       try {
-        ytPlayerRef.current = new window.YT.Player("yt-audio-engine", {
-          height: "180",
-          width: "320",
-          videoId: activeTrack?.youtubeId || "TlTuiVFTb0g",
+        ytPlayerRef.current = new window.YT.Player("selva-yt-monitor", {
+          height: "100%",
+          width: "100%",
+          videoId: activeTrack.youtubeId,
           playerVars: {
             autoplay: isPlaying ? 1 : 0,
-            controls: 0,
-            disablekb: 1,
-            fs: 0,
+            controls: 1,
             modestbranding: 1,
             rel: 0,
             playsinline: 1,
+            enablejsapi: 1,
+            origin: window.location.origin,
           },
           events: {
             onReady: (event: any) => {
-              event.target.setVolume(isMuted ? 0 : Math.round(volume * 100));
-              if (isPlaying && activeTrack?.youtubeId) {
-                event.target.playVideo();
-              }
+              try {
+                event.target.unMute();
+                event.target.setVolume(Math.round(volume * 100));
+                if (isPlaying) {
+                  event.target.playVideo();
+                }
+              } catch (e) {}
             },
             onStateChange: (event: any) => {
-              // 0 = ENDED, 1 = PLAYING, 2 = PAUSED
+              // 0 = Terminado -> Siguiente canción
               if (event.data === 0) {
                 onNextTrack();
+              }
+              // Si el reproductor arranca en silencio debido a políticas de autoplay, notificamos al usuario
+              if (event.data === 1 && event.target.isMuted && event.target.isMuted()) {
+                setNeedsUserUnmute(true);
+              } else if (event.data === 1) {
+                setNeedsUserUnmute(false);
               }
             },
           },
@@ -112,57 +123,31 @@ export default function AudioPlayer({
       } catch (e) {
         console.error("YT Player init error:", e);
       }
-    }
-  }, [isYtApiReady]);
-
-  // 3. Manejar cambio de pista
-  useEffect(() => {
-    if (!activeTrack) return;
-
-    if (activeTrack.youtubeId) {
-      // Pausar audio local si estaba sonando
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-
-      if (ytPlayerRef.current && typeof ytPlayerRef.current.loadVideoById === "function") {
-        try {
-          ytPlayerRef.current.loadVideoById(activeTrack.youtubeId);
-          if (isPlaying) {
-            ytPlayerRef.current.playVideo();
-          } else {
-            ytPlayerRef.current.pauseVideo();
-          }
-        } catch (e) {}
-      }
-    } else if (activeTrack.audioUrl) {
-      // Canción con archivo de audio directo / subido
-      if (ytPlayerRef.current && typeof ytPlayerRef.current.pauseVideo === "function") {
-        try {
-          ytPlayerRef.current.pauseVideo();
-        } catch (e) {}
-      }
-
-      if (audioRef.current) {
-        audioRef.current.src = activeTrack.audioUrl;
+    } else if (typeof ytPlayerRef.current.loadVideoById === "function") {
+      try {
+        ytPlayerRef.current.loadVideoById(activeTrack.youtubeId);
+        ytPlayerRef.current.unMute();
+        ytPlayerRef.current.setVolume(Math.round(volume * 100));
         if (isPlaying) {
-          audioRef.current.play().catch(() => {});
+          ytPlayerRef.current.playVideo();
         }
-      }
+      } catch (e) {}
     }
-  }, [activeTrack?.id]);
+  }, [isYtApiReady, activeTrack?.id]);
 
-  // 4. Manejar Play / Pause toggle
+  // 3. Manejo de Play / Pause
   useEffect(() => {
     if (activeTrack?.youtubeId && ytPlayerRef.current && typeof ytPlayerRef.current.getPlayerState === "function") {
       try {
         if (isPlaying) {
+          ytPlayerRef.current.unMute();
+          ytPlayerRef.current.setVolume(Math.round(volume * 100));
           ytPlayerRef.current.playVideo();
         } else {
           ytPlayerRef.current.pauseVideo();
         }
       } catch (e) {}
-    } else if (audioRef.current) {
+    } else if (activeTrack?.audioUrl && audioRef.current) {
       if (isPlaying) {
         audioRef.current.play().catch(() => {});
       } else {
@@ -171,20 +156,27 @@ export default function AudioPlayer({
     }
   }, [isPlaying]);
 
-  // 5. Manejar Volumen
+  // 4. Manejo de volumen y mute
   useEffect(() => {
     const currentVol = isMuted ? 0 : volume;
+
     if (audioRef.current) {
       audioRef.current.volume = currentVol;
     }
+
     if (ytPlayerRef.current && typeof ytPlayerRef.current.setVolume === "function") {
       try {
-        ytPlayerRef.current.setVolume(Math.round(currentVol * 100));
+        if (isMuted) {
+          ytPlayerRef.current.mute();
+        } else {
+          ytPlayerRef.current.unMute();
+          ytPlayerRef.current.setVolume(Math.round(currentVol * 100));
+        }
       } catch (e) {}
     }
   }, [volume, isMuted]);
 
-  // 6. Loop de Progreso en Vivo (Intervalo regular para YouTube y Eventos para HTML5)
+  // 5. Loop de sincronización de tiempo
   useEffect(() => {
     const interval = setInterval(() => {
       if (activeTrack?.youtubeId && ytPlayerRef.current && typeof ytPlayerRef.current.getCurrentTime === "function") {
@@ -194,22 +186,25 @@ export default function AudioPlayer({
           setCurrentTime(cur);
           if (dur > 0) setDuration(dur);
         } catch (e) {}
+      } else if (audioRef.current && !activeTrack?.youtubeId) {
+        setCurrentTime(audioRef.current.currentTime || 0);
+        setDuration(audioRef.current.duration || 0);
       }
-    }, 500);
+    }, 400);
 
     return () => clearInterval(interval);
   }, [activeTrack]);
 
-  // Handlers para HTML5 audio
-  const handleHtmlAudioTimeUpdate = () => {
-    if (!activeTrack?.youtubeId && audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
-    }
-  };
-
-  const handleHtmlAudioLoadedMetadata = () => {
-    if (!activeTrack?.youtubeId && audioRef.current) {
-      setDuration(audioRef.current.duration || 0);
+  // Forzar activación del audio si el navegador lo puso en silencio
+  const handleForceUnmute = () => {
+    if (ytPlayerRef.current && typeof ytPlayerRef.current.unMute === "function") {
+      try {
+        ytPlayerRef.current.unMute();
+        ytPlayerRef.current.setVolume(100);
+        ytPlayerRef.current.playVideo();
+        setIsMuted(false);
+        setNeedsUserUnmute(false);
+      } catch (e) {}
     }
   };
 
@@ -237,48 +232,57 @@ export default function AudioPlayer({
 
   return (
     <>
-      {/* Elemento de Audio HTML5 para archivos subidos localmente */}
-      <audio
-        ref={audioRef}
-        onTimeUpdate={handleHtmlAudioTimeUpdate}
-        onLoadedMetadata={handleHtmlAudioLoadedMetadata}
-        onEnded={onNextTrack}
-        onError={() => {
-          // Si falla un audio directo, pasa a la siguiente
-          console.warn("Audio file error, skipping or falling back");
-        }}
-      />
+      {/* Audio nativo para archivos locales */}
+      {activeTrack.audioUrl && (
+        <audio
+          ref={audioRef}
+          src={activeTrack.audioUrl}
+          onEnded={onNextTrack}
+        />
+      )}
 
-      {/* Contenedor YouTube IFrame Engine (Oculto en fondo o Visible si se activa visor) */}
+      {/* Mini-Monitor de Transmisión Oficial de SELVA MUSIC (Garantiza reproducción sin mute) */}
       <div
-        ref={ytContainerRef}
-        style={{
-          position: "fixed",
-          bottom: showVideoModal ? "90px" : "-9999px",
-          right: showVideoModal ? "24px" : "-9999px",
-          width: showVideoModal ? "320px" : "1px",
-          height: showVideoModal ? "180px" : "1px",
-          zIndex: 99999,
-          borderRadius: "8px",
-          overflow: "hidden",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.8)",
-          border: "1px solid rgba(201, 255, 61, 0.4)",
-          background: "#000",
-          opacity: showVideoModal ? 1 : 0.01,
-          pointerEvents: showVideoModal ? "auto" : "none",
-          transition: "all 200ms ease",
-        }}
+        className={`selva-monitor-dock ${showMonitor ? "is-visible" : "is-minimized"}`}
+        aria-label="Monitor de transmisión oficial de DJ WILOR"
       >
-        <div id="yt-audio-engine" />
+        <div className="selva-monitor-header">
+          <div className="selva-monitor-title">
+            <span className="live-dot" />
+            <span>TRANSMISIÓN SELVA MUSIC · BOLIVIA</span>
+          </div>
+          <div className="selva-monitor-tools">
+            <button
+              type="button"
+              className="monitor-tool-btn"
+              onClick={() => setShowMonitor((prev) => !prev)}
+              title={showMonitor ? "Minimizar pantalla" : "Mostrar pantalla"}
+            >
+              {showMonitor ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+            </button>
+          </div>
+        </div>
+
+        <div className="selva-monitor-screen">
+          <div id="selva-yt-monitor" className="selva-yt-frame" />
+        </div>
+
+        {/* Notificación si el navegador silenció el audio */}
+        {needsUserUnmute && (
+          <div className="selva-unmute-overlay" onClick={handleForceUnmute}>
+            <Volume2 size={18} />
+            <span>Haz clic aquí para activar el volumen oficial</span>
+          </div>
+        )}
       </div>
 
-      {/* Playlist desplegable completa */}
+      {/* Playlist desplegable */}
       {isPlaylistOpen && (
         <div className="player-playlist-panel">
           <div className="player-playlist-header">
             <div>
-              <h3>Playlist Oficial · SELVA MUSIC</h3>
-              <p>{tracks.length} canciones oficiales en rotación</p>
+              <h3>Playlist Oficial · SELVA MUSIC GROUP</h3>
+              <p>{tracks.length} temas oficiales en rotación</p>
             </div>
             <button
               type="button"
@@ -325,7 +329,7 @@ export default function AudioPlayer({
       {/* Barra de Audio Inferior Fija */}
       <aside className="global-audio-bar" aria-label="Reproductor de música continuo">
         <div className="audio-bar-inner">
-          {/* Track Actual */}
+          {/* Info del Track */}
           <div className="audio-track-media">
             <img
               src={activeTrack.coverUrl}
@@ -336,17 +340,17 @@ export default function AudioPlayer({
               <strong className="audio-title">{activeTrack.title}</strong>
               <span className="audio-artist">{activeTrack.artist}</span>
             </div>
-            {activeTrack.youtubeId && (
-              <button
-                type="button"
-                className={`audio-yt-badge ${showVideoModal ? "is-active" : ""}`}
-                onClick={() => setShowVideoModal((prev) => !prev)}
-                title={showVideoModal ? "Ocultar videoclip oficial" : "Ver videoclip oficial"}
-              >
-                <Youtube size={13} />
-                <span>{showVideoModal ? "Ocultar Video" : "Video"}</span>
-              </button>
-            )}
+
+            {/* Botón para alternar Monitor de Video */}
+            <button
+              type="button"
+              className={`audio-monitor-toggle ${showMonitor ? "is-active" : ""}`}
+              onClick={() => setShowMonitor((prev) => !prev)}
+              title={showMonitor ? "Ocultar monitor de video" : "Ver pantalla de video"}
+            >
+              <Tv size={14} />
+              <span>{showMonitor ? "Monitor Activo" : "Ver Video"}</span>
+            </button>
           </div>
 
           {/* Controles Centrales & Progreso */}
@@ -363,7 +367,10 @@ export default function AudioPlayer({
               <button
                 type="button"
                 className="audio-btn-play"
-                onClick={onTogglePlay}
+                onClick={() => {
+                  onTogglePlay();
+                  if (needsUserUnmute) handleForceUnmute();
+                }}
                 aria-label={isPlaying ? "Pausar música" : "Reproducir música"}
               >
                 {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
@@ -395,14 +402,17 @@ export default function AudioPlayer({
             </div>
           </div>
 
-          {/* Acciones Laterales */}
+          {/* Controles Laterales */}
           <div className="audio-side-actions">
-            {/* Volumen */}
+            {/* Control de Volumen */}
             <div className="audio-vol-control">
               <button
                 type="button"
                 className="audio-icon-btn"
-                onClick={() => setIsMuted((prev) => !prev)}
+                onClick={() => {
+                  setIsMuted((prev) => !prev);
+                  if (needsUserUnmute) handleForceUnmute();
+                }}
                 aria-label={isMuted ? "Desactivar silencio" : "Silenciar"}
               >
                 {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
@@ -414,15 +424,17 @@ export default function AudioPlayer({
                 step={0.05}
                 value={isMuted ? 0 : volume}
                 onChange={(e) => {
-                  setVolume(Number(e.target.value));
+                  const val = Number(e.target.value);
+                  setVolume(val);
                   if (isMuted) setIsMuted(false);
+                  if (needsUserUnmute) handleForceUnmute();
                 }}
                 className="audio-vol-slider"
                 aria-label="Control de volumen"
               />
             </div>
 
-            {/* Toggle Playlist */}
+            {/* Botón Playlist */}
             <button
               type="button"
               className={`audio-icon-btn audio-playlist-btn ${isPlaylistOpen ? "is-open" : ""}`}

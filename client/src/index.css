@@ -3070,6 +3070,670 @@ img { display: block; max-width: 100%; }
   font-size: 13px;
 }
 
+/* =============================================================================
+   NUEVA SUITE EJECUTIVA DE BOOKING & CONTRATACIÓN (BookingModal High-End)
+   ============================================================================= */
+.booking-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background: rgba(4, 7, 5, 0.88);
+  backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.booking-modal-window {
+  position: relative;
+  width: 100%;
+  max-width: 820px;
+  max-height: 92vh;
+  background: #0d140f;
+  border: 1px solid rgba(201, 255, 61, 0.45);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.95), 0 0 40px rgba(201, 255, 61, 0.15);
+  border-radius: 8px;
+  overflow-y: auto;
+  animation: modal-pop 200ms ease-out;
+}
+
+@keyframes modal-pop {
+  from { opacity: 0; transform: scale(0.97) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.booking-modal-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  background: #131d16;
+  border-bottom: 1px solid rgba(201, 255, 61, 0.2);
+}
+
+.booking-modal-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.booking-tag-gold {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(201, 255, 61, 0.15);
+  border: 1px solid var(--lime);
+  color: var(--lime);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 4px;
+}
+
+.booking-tag-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #17241b;
+  border: 1px solid rgba(241, 238, 228, 0.15);
+  color: rgba(241, 238, 228, 0.8);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  border-radius: 4px;
+}
+
+.status-dot-green {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+}
+
+.booking-btn-exit {
+  background: #1a251e;
+  border: 1px solid rgba(241, 238, 228, 0.2);
+  color: rgba(241, 238, 228, 0.8);
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 160ms ease;
+}
+
+.booking-btn-exit:hover {
+  background: var(--lime);
+  color: var(--ink);
+  border-color: var(--lime);
+}
+
+.booking-modal-content-form {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Tarjeta Ejecutiva del Artista */
+.booking-artist-banner {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #162219, #0f1812);
+  border: 1px solid rgba(201, 255, 61, 0.3);
+  border-radius: 6px;
+}
+
+.booking-artist-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--lime);
+  box-shadow: 0 0 15px rgba(201, 255, 61, 0.25);
+}
+
+.booking-artist-details {
+  flex: 1;
+}
+
+.booking-artist-sub {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--lime);
+}
+
+.booking-artist-name {
+  margin: 2px 0 4px;
+  font: 700 22px/1.1 var(--display);
+  letter-spacing: 0.02em;
+  color: var(--paper);
+}
+
+.booking-artist-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: rgba(241, 238, 228, 0.65);
+}
+
+.booking-format-pill {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(241, 238, 228, 0.12);
+  border-radius: 4px;
+  max-width: 240px;
+}
+
+.booking-format-pill strong {
+  font-size: 10px;
+  color: var(--lime);
+  text-transform: uppercase;
+}
+
+.booking-format-pill span {
+  font-size: 11px;
+  color: rgba(241, 238, 228, 0.8);
+}
+
+/* Alerta de Choque de Fechas */
+.booking-clash-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 18px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+}
+
+.booking-clash-icon {
+  color: #ef4444;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.booking-clash-box strong {
+  font-size: 12px;
+  color: #fca5a5;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.booking-clash-box p {
+  margin: 0;
+  font-size: 12px;
+  color: #fecaca;
+  line-height: 1.4;
+}
+
+/* Formulario en 2 Columnas */
+.booking-sections-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.booking-section-card {
+  padding: 18px;
+  background: #111a14;
+  border: 1px solid rgba(241, 238, 228, 0.1);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.booking-section-card.full-span {
+  padding: 14px 18px;
+}
+
+.booking-section-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lime);
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(241, 238, 228, 0.08);
+}
+
+.booking-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.booking-field-group label,
+.booking-notes-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(241, 238, 228, 0.8);
+}
+
+.booking-input {
+  width: 100%;
+  padding: 11px 14px;
+  background: #162219;
+  border: 1px solid rgba(241, 238, 228, 0.15);
+  border-radius: 4px;
+  color: var(--paper);
+  font-size: 13px;
+  outline: none;
+  transition: all 160ms ease;
+}
+
+.booking-input:focus {
+  border-color: var(--lime);
+  box-shadow: 0 0 10px rgba(201, 255, 61, 0.25);
+  background: #1a291f;
+}
+
+.booking-input-phone {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.booking-phone-prefix {
+  padding: 11px 12px;
+  background: #1a261d;
+  border: 1px solid rgba(241, 238, 228, 0.15);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--lime);
+  white-space: nowrap;
+}
+
+.booking-quick-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.booking-chip {
+  padding: 4px 8px;
+  background: #18241b;
+  border: 1px solid rgba(241, 238, 228, 0.12);
+  color: rgba(241, 238, 228, 0.7);
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.booking-chip:hover,
+.booking-chip.is-selected {
+  background: rgba(201, 255, 61, 0.18);
+  border-color: var(--lime);
+  color: var(--lime);
+}
+
+.booking-two-cols {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 12px;
+}
+
+.booking-textarea {
+  resize: vertical;
+  min-height: 56px;
+}
+
+/* Previsualización del Comprobante */
+.booking-preview-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #121c15;
+  border: 1px dashed rgba(201, 255, 61, 0.35);
+  border-radius: 6px;
+}
+
+.booking-preview-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.text-lime {
+  color: var(--lime);
+  flex-shrink: 0;
+}
+
+.booking-preview-left strong {
+  font-size: 13px;
+  color: var(--paper);
+  display: block;
+}
+
+.booking-preview-left p {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: rgba(241, 238, 228, 0.65);
+  line-height: 1.4;
+}
+
+.booking-guarantee-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.booking-guarantee-badge span {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--lime);
+  letter-spacing: 0.04em;
+}
+
+.booking-guarantee-badge small {
+  font-size: 10px;
+  color: rgba(241, 238, 228, 0.55);
+}
+
+/* Botón Monumental */
+.booking-btn-main {
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #c9ff3d, #8ae010);
+  border: none;
+  border-radius: 6px;
+  color: #0b110c;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(201, 255, 61, 0.35);
+  transition: all 180ms ease;
+}
+
+.booking-btn-main:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(201, 255, 61, 0.5);
+  background: linear-gradient(135deg, #d8ff61, #9bf01c);
+}
+
+.booking-btn-main-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.btn-wa-icon {
+  flex-shrink: 0;
+}
+
+.btn-text-block {
+  text-align: center;
+  flex: 1;
+}
+
+.btn-text-block strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.btn-text-block span {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+.btn-dl-icon {
+  flex-shrink: 0;
+}
+
+/* Pantalla de Éxito / Ticket VIP */
+.booking-success-screen {
+  padding: 40px 24px;
+  display: grid;
+  place-items: center;
+}
+
+.booking-success-card {
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  padding: 30px;
+  background: #121c15;
+  border: 1px solid var(--lime);
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+.success-icon-badge {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: rgba(201, 255, 61, 0.15);
+  border: 2px solid var(--lime);
+  color: var(--lime);
+  display: grid;
+  place-items: center;
+}
+
+.success-pretitle {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--lime);
+  text-transform: uppercase;
+}
+
+.success-title {
+  margin: 6px 0 14px;
+  font: 700 24px/1.1 var(--display);
+  color: var(--paper);
+}
+
+.success-folio-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #17241b;
+  border: 1px dashed var(--lime);
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.success-folio-box span {
+  font-size: 11px;
+  color: rgba(241, 238, 228, 0.6);
+}
+
+.success-folio-box strong {
+  font-size: 16px;
+  font-family: monospace;
+  color: var(--lime);
+}
+
+.success-desc {
+  font-size: 13px;
+  color: rgba(241, 238, 228, 0.75);
+  line-height: 1.5;
+  margin: 0 0 24px;
+}
+
+.success-actions-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* =============================================================================
+   MONITOR DE AUDIO & VIDEO SELVA MUSIC (AudioPlayer Visible Dock)
+   ============================================================================= */
+.selva-monitor-dock {
+  position: fixed;
+  bottom: 84px;
+  right: 20px;
+  z-index: 99990;
+  width: 280px;
+  background: #0d140f;
+  border: 1px solid rgba(201, 255, 61, 0.5);
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+  transition: all 220ms ease;
+}
+
+.selva-monitor-dock.is-minimized {
+  width: 220px;
+  height: 38px;
+  opacity: 0.95;
+}
+
+.selva-monitor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #131d16;
+  border-bottom: 1px solid rgba(201, 255, 61, 0.2);
+}
+
+.selva-monitor-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--lime);
+  text-transform: uppercase;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 6px #ef4444;
+  animation: pulse-live 1.4s infinite;
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.monitor-tool-btn {
+  background: none;
+  border: none;
+  color: rgba(241, 238, 228, 0.7);
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.monitor-tool-btn:hover {
+  color: var(--lime);
+}
+
+.selva-monitor-screen {
+  position: relative;
+  width: 100%;
+  height: 158px;
+  background: #000;
+}
+
+.selva-yt-frame {
+  width: 100%;
+  height: 100%;
+}
+
+.selva-unmute-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--lime);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  z-index: 10;
+  animation: pulse-unmute 2s infinite;
+}
+
+@keyframes pulse-unmute {
+  0%, 100% { background: rgba(0, 0, 0, 0.75); }
+  50% { background: rgba(201, 255, 61, 0.2); }
+}
+
+.audio-monitor-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  background: #17241b;
+  border: 1px solid rgba(201, 255, 61, 0.3);
+  color: var(--lime);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: all 160ms ease;
+}
+
+.audio-monitor-toggle:hover,
+.audio-monitor-toggle.is-active {
+  background: var(--lime);
+  color: var(--ink);
+  box-shadow: 0 0 10px rgba(201, 255, 61, 0.3);
+}
+
+@media (max-width: 768px) {
+  .booking-sections-grid {
+    grid-template-columns: 1fr;
+  }
+  .selva-monitor-dock {
+    right: 12px;
+    bottom: 120px;
+    width: 240px;
+  }
+}
+
 @media (max-width: 768px) {
   .global-audio-bar {
     height: auto;
