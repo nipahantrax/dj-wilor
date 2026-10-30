@@ -400,6 +400,555 @@ img { display: block; max-width: 100%; }
   }
 }
 
+/* =============================================================================
+   ROSTER DE ARTISTAS & MODAL FICHA TÉCNICA (SELVA MUSIC GROUP)
+   ============================================================================= */
+
+.roster-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 30px 0 40px;
+}
+
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: #171d18;
+  border: 1px solid rgba(241, 238, 228, 0.12);
+  color: rgba(241, 238, 228, 0.8);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+
+.filter-btn:hover {
+  border-color: var(--lime);
+  color: var(--paper);
+  background: #1d251f;
+}
+
+.filter-btn.is-active {
+  background: var(--lime);
+  color: var(--ink);
+  border-color: var(--lime);
+  box-shadow: 0 0 20px rgba(201, 255, 61, 0.25);
+}
+
+.roster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 28px;
+}
+
+.artist-card {
+  display: flex;
+  flex-direction: column;
+  background: #151b16;
+  border: 1px solid rgba(241, 238, 228, 0.1);
+  overflow: hidden;
+  transition: transform 220ms var(--ease-out), border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.artist-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(201, 255, 61, 0.4);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 24px rgba(201, 255, 61, 0.08);
+}
+
+.artist-card-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  cursor: pointer;
+  background: #0d120e;
+}
+
+.artist-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 420ms var(--ease-out);
+}
+
+.artist-card:hover .artist-card-media img {
+  transform: scale(1.05);
+}
+
+.artist-card-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 14px;
+  background: linear-gradient(180deg, rgba(9, 12, 10, 0.7) 0%, transparent 40%, rgba(9, 12, 10, 0.85) 100%);
+  pointer-events: none;
+}
+
+.artist-badge {
+  align-self: flex-start;
+  padding: 5px 10px;
+  background: rgba(14, 19, 15, 0.9);
+  border: 1px solid rgba(201, 255, 61, 0.35);
+  color: var(--lime);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  backdrop-filter: blur(6px);
+}
+
+.artist-view-btn {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(201, 255, 61, 0.95);
+  color: var(--ink);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: none;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: all 200ms var(--ease-out);
+}
+
+.artist-card:hover .artist-view-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.artist-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 22px;
+}
+
+.artist-location {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--lime);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.artist-name {
+  margin: 0 0 6px;
+  font: 600 24px/1.1 var(--display);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+
+.artist-name:hover {
+  color: var(--lime);
+}
+
+.artist-genre {
+  margin: 0 0 16px;
+  color: rgba(241, 238, 228, 0.65);
+  font-size: 12px;
+}
+
+.artist-hit {
+  margin-top: auto;
+  padding: 12px;
+  background: rgba(9, 12, 10, 0.5);
+  border: 1px solid rgba(241, 238, 228, 0.08);
+  margin-bottom: 18px;
+}
+
+.hit-label {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lime);
+  margin-bottom: 4px;
+}
+
+.hit-track {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--paper);
+}
+
+.artist-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.button-card-view {
+  background: #232c25;
+  color: var(--paper);
+  border: 1px solid rgba(241, 238, 228, 0.15);
+  font-size: 9px;
+  padding: 0 12px;
+  min-height: 40px;
+  cursor: pointer;
+}
+
+.button-card-view:hover {
+  background: #2f3b32;
+  border-color: var(--lime);
+  color: var(--lime);
+}
+
+.button-whatsapp-sm {
+  background: #25d366;
+  color: #08160a;
+  border: 1px solid #25d366;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 0 12px;
+  min-height: 40px;
+}
+
+.button-whatsapp-sm:hover {
+  background: #2ee271;
+  color: #000;
+}
+
+/* =============================================================================
+   MODAL DE ARTISTA (FICHA TÉCNICA & BOOKING)
+   ============================================================================= */
+
+.artist-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(5, 8, 6, 0.88);
+  backdrop-filter: blur(10px);
+  animation: modal-fade-in 220ms ease;
+}
+
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.artist-modal-content {
+  position: relative;
+  width: min(940px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #131914;
+  border: 1px solid rgba(201, 255, 61, 0.35);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8), 0 0 30px rgba(201, 255, 61, 0.12);
+  padding: 36px;
+}
+
+.artist-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: #1c241e;
+  border: 1px solid rgba(241, 238, 228, 0.2);
+  color: var(--paper);
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+
+.artist-modal-close:hover {
+  background: var(--lime);
+  color: var(--ink);
+  border-color: var(--lime);
+}
+
+.artist-modal-header {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  padding-bottom: 26px;
+  border-bottom: 1px solid rgba(241, 238, 228, 0.12);
+  margin-bottom: 28px;
+}
+
+.artist-modal-avatar {
+  width: 100px;
+  height: 100px;
+  flex: 0 0 100px;
+  border: 2px solid var(--lime);
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(201, 255, 61, 0.3);
+}
+
+.artist-modal-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.artist-modal-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.artist-modal-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.artist-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  background: rgba(37, 211, 102, 0.12);
+  border: 1px solid rgba(37, 211, 102, 0.4);
+  color: #5aff96;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.artist-modal-titles h2 {
+  margin: 4px 0 2px;
+  font: 600 clamp(32px, 5vw, 48px)/1 var(--display);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--paper);
+}
+
+.artist-meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  color: rgba(241, 238, 228, 0.7);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.artist-meta-line span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.artist-modal-body {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 32px;
+}
+
+.artist-modal-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.artist-bio-block h4,
+.artist-highlights-block h4,
+.artist-show-block h4,
+.artist-player-block h4,
+.artist-socials-block h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+
+.artist-bio-block p {
+  margin: 0;
+  color: rgba(241, 238, 228, 0.85);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.artist-highlights-block ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.artist-highlights-block li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  color: rgba(241, 238, 228, 0.85);
+  line-height: 1.5;
+}
+
+.artist-highlights-block li svg {
+  flex: 0 0 auto;
+  color: var(--lime);
+  margin-top: 2px;
+}
+
+.artist-show-block {
+  padding: 16px;
+  background: #19211b;
+  border-left: 3px solid var(--lime);
+}
+
+.artist-show-block p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--paper);
+  line-height: 1.6;
+}
+
+.artist-video-container {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border: 1px solid rgba(241, 238, 228, 0.15);
+  overflow: hidden;
+}
+
+.artist-video-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.player-track-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 4px 0;
+  font-size: 11px;
+}
+
+.player-track-info strong {
+  color: var(--paper);
+}
+
+.player-track-info small {
+  color: var(--lime);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.artist-social-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.artist-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  background: #1c241e;
+  border: 1px solid rgba(241, 238, 228, 0.15);
+  color: var(--paper);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: all 160ms ease;
+}
+
+.artist-social-link:hover {
+  background: var(--lime);
+  color: var(--ink);
+  border-color: var(--lime);
+}
+
+.artist-booking-box {
+  margin-top: auto;
+  padding: 20px;
+  background: rgba(37, 211, 102, 0.07);
+  border: 1px solid rgba(37, 211, 102, 0.3);
+}
+
+.artist-booking-box p {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5aff96;
+}
+
+.button-whatsapp-modal {
+  width: 100%;
+  background: #25d366;
+  color: #06180a;
+  border: 1px solid #25d366;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 180ms ease;
+}
+
+.button-whatsapp-modal:hover {
+  background: #2ee271;
+  color: #000;
+  box-shadow: 0 6px 24px rgba(37, 211, 102, 0.45);
+}
+
+@media (max-width: 768px) {
+  .artist-modal-content {
+    padding: 22px 18px;
+  }
+  .artist-modal-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .artist-modal-body {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .roster-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }

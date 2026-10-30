@@ -1,8 +1,8 @@
-import { ArrowDownRight, ArrowRight, ArrowUpRight, MessageCircle, Play, Radio, Sparkles } from "lucide-react";
+import { ArrowDownRight, ArrowRight, ArrowUpRight, CheckCircle2, Disc3, Headphones, MapPin, MessageCircle, Mic2, Music2, Play, Radio, Sparkles, Users, X } from "lucide-react";
 import { useState } from "react";
 import type { ReactNode, SyntheticEvent } from "react";
 import SiteHeader from "@/components/SiteHeader";
-import { contact, milestones, sealLink, socialLinks, works } from "@/lib/wilorContent";
+import { contact, milestones, rosterArtists, sealLink, socialLinks, works, type Artist } from "@/lib/wilorContent";
 
 const heroImage = "./assets/hero-gta-tropico.jpg";
 const portraitImage = "./assets/wilor-profile.jpg";
@@ -58,6 +58,13 @@ function FeaturedPlayer() {
 }
 
 export default function Home() {
+  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+  const [activeCategory, setActiveCategory] = useState<"all" | "dj" | "vocal" | "group">("all");
+
+  const filteredArtists = activeCategory === "all"
+    ? rosterArtists
+    : rosterArtists.filter((a) => a.category === activeCategory);
+
   return (
     <div className="site-shell">
       <a className="skip-link" href="#contenido">Saltar al contenido</a>
@@ -181,11 +188,131 @@ export default function Home() {
           </div>
         </section>
 
+        {/* =========================================================================
+            SECCIÓN 04: ROSTER DE ARTISTAS DE SELVA MUSIC GROUP
+           ========================================================================= */}
+        <section className="roster-section section-wrap" id="artistas" aria-labelledby="roster-title">
+          <div className="section-heading">
+            <SectionKicker index="04">ROSTER OFICIAL · SELVA MUSIC GROUP</SectionKicker>
+            <div className="heading-row">
+              <h2 id="roster-title">Nuestros <span>artistas & talentos.</span></h2>
+              <p>Música, biografía, videoclips oficiales y contratación directa de los exponentes que lideran el sonido urbano y tropical de Bolivia.</p>
+            </div>
+          </div>
+
+          {/* Filtros de Categoría */}
+          <div className="roster-filters" role="tablist" aria-label="Filtrar artistas">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeCategory === "all"}
+              className={`filter-btn ${activeCategory === "all" ? "is-active" : ""}`}
+              onClick={() => setActiveCategory("all")}
+            >
+              <Music2 size={14} /> Todos ({rosterArtists.length})
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeCategory === "dj"}
+              className={`filter-btn ${activeCategory === "dj" ? "is-active" : ""}`}
+              onClick={() => setActiveCategory("dj")}
+            >
+              <Headphones size={14} /> DJs & Productores
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeCategory === "vocal"}
+              className={`filter-btn ${activeCategory === "vocal" ? "is-active" : ""}`}
+              onClick={() => setActiveCategory("vocal")}
+            >
+              <Mic2 size={14} /> Cantantes Urbanos
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeCategory === "group"}
+              className={`filter-btn ${activeCategory === "group" ? "is-active" : ""}`}
+              onClick={() => setActiveCategory("group")}
+            >
+              <Users size={14} /> Agrupaciones
+            </button>
+          </div>
+
+          {/* Grid de Artistas */}
+          <div className="roster-grid">
+            {filteredArtists.map((artist) => (
+              <article className="artist-card" key={artist.id}>
+                <div className="artist-card-media" onClick={() => setSelectedArtist(artist)}>
+                  <img
+                    src={artist.photo}
+                    alt={artist.name}
+                    loading="lazy"
+                    onError={fallbackImage("https://i.ytimg.com/vi/TlTuiVFTb0g/hqdefault.jpg")}
+                  />
+                  <div className="artist-card-overlay">
+                    <span className="artist-badge">{artist.role.split("·")[0].trim()}</span>
+                    <button
+                      type="button"
+                      className="artist-view-btn"
+                      aria-label={`Ver perfil completo de ${artist.name}`}
+                    >
+                      <span>Ver Ficha & Shows</span>
+                      <ArrowUpRight size={15} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="artist-card-body">
+                  <div className="artist-location">
+                    <MapPin size={12} />
+                    <span>{artist.location}</span>
+                  </div>
+                  <h3 className="artist-name" onClick={() => setSelectedArtist(artist)}>
+                    {artist.name}
+                  </h3>
+                  <p className="artist-genre">{artist.genre}</p>
+
+                  <div className="artist-hit">
+                    <span className="hit-label">Hit destacado</span>
+                    <div className="hit-track">
+                      <Play size={12} fill="currentColor" />
+                      <span>{artist.featuredTrack.title}</span>
+                    </div>
+                  </div>
+
+                  <div className="artist-card-actions">
+                    <button
+                      type="button"
+                      className="button button-card-view"
+                      onClick={() => setSelectedArtist(artist)}
+                    >
+                      Perfil & Música
+                    </button>
+                    <a
+                      className="button button-whatsapp-sm"
+                      href={`https://wa.me/59169528962?text=${encodeURIComponent(
+                        `Hola SELVA MUSIC, deseo cotizar una presentación para ${artist.name}.`
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`Cotizar a ${artist.name} por WhatsApp`}
+                    >
+                      <MessageCircle size={15} /> Cotizar
+                    </a>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <section className="label-section" id="sello" aria-labelledby="label-title">
           <div className="label-orbit label-orbit-one" aria-hidden="true" />
           <div className="label-orbit label-orbit-two" aria-hidden="true" />
           <div className="label-inner">
-            <SectionKicker index="04">SELLO & NUEVAS VOCES</SectionKicker>
+            <SectionKicker index="05">SELLO & NUEVAS VOCES</SectionKicker>
             <div className="label-heading">
               <div>
                 <p className="label-wordmark"><span>SELVA</span><small>MUSIC GROUP</small></p>
@@ -210,7 +337,7 @@ export default function Home() {
 
         <section className="social-section section-wrap" id="redes" aria-labelledby="social-title">
           <div className="social-heading">
-            <SectionKicker index="05">PRESENCIA OFICIAL</SectionKicker>
+            <SectionKicker index="06">PRESENCIA OFICIAL</SectionKicker>
             <h2 id="social-title">Sigue el recorrido.</h2>
             <p>Canales públicos de música, videos, presentaciones y contacto.</p>
           </div>
@@ -232,7 +359,7 @@ export default function Home() {
 
         <section className="contact-section" id="contacto" aria-labelledby="contact-title">
           <div className="contact-content">
-            <SectionKicker index="06">BOOKING · COLABORACIONES · PROYECTOS</SectionKicker>
+            <SectionKicker index="07">BOOKING · CONTRATACIONES · PROYECTOS</SectionKicker>
             <h2 id="contact-title">¿Hacemos<br /><em>que suene?</em></h2>
             <p>Para contratación, producción y nuevas colaboraciones, conecta directamente con WILOR.</p>
             <div className="contact-actions">
@@ -274,6 +401,132 @@ export default function Home() {
         <MessageCircle size={24} />
         <span>WhatsApp</span>
       </a>
+
+      {/* Modal Ficha Técnica & Shows del Artista */}
+      {selectedArtist && (
+        <div
+          className="artist-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-artist-title"
+          onClick={() => setSelectedArtist(null)}
+        >
+          <div
+            className="artist-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="artist-modal-close"
+              onClick={() => setSelectedArtist(null)}
+              aria-label="Cerrar ficha de artista"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="artist-modal-header">
+              <div className="artist-modal-avatar">
+                <img
+                  src={selectedArtist.photo}
+                  alt={selectedArtist.name}
+                  onError={fallbackImage("https://i.ytimg.com/vi/TlTuiVFTb0g/hqdefault.jpg")}
+                />
+              </div>
+              <div className="artist-modal-titles">
+                <div className="artist-modal-tags">
+                  <span className="artist-badge">{selectedArtist.role}</span>
+                  <span className="artist-status-pill">
+                    <span className="status-dot" /> {selectedArtist.bookingStatus}
+                  </span>
+                </div>
+                <h2 id="modal-artist-title">{selectedArtist.name}</h2>
+                <div className="artist-meta-line">
+                  <span><MapPin size={13} /> {selectedArtist.location}</span>
+                  <span>•</span>
+                  <span><Music2 size={13} /> {selectedArtist.genre}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="artist-modal-body">
+              <div className="artist-modal-col">
+                <div className="artist-bio-block">
+                  <h4>Biografía & Trayectoria</h4>
+                  <p>{selectedArtist.bio}</p>
+                </div>
+
+                <div className="artist-highlights-block">
+                  <h4>Puntos Clave & Logros</h4>
+                  <ul>
+                    {selectedArtist.highlights.map((item, idx) => (
+                      <li key={idx}>
+                        <CheckCircle2 size={15} />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="artist-show-block">
+                  <h4><Sparkles size={15} /> Formato de Show en Vivo</h4>
+                  <p>{selectedArtist.showFormat}</p>
+                </div>
+              </div>
+
+              <div className="artist-modal-col">
+                <div className="artist-player-block">
+                  <h4>Lanzamiento Destacado</h4>
+                  <div className="artist-video-container">
+                    <iframe
+                      src={`https://www.youtube-nocookie.com/embed/${selectedArtist.featuredTrack.youtubeId}?rel=0`}
+                      title={`${selectedArtist.featuredTrack.title} — ${selectedArtist.name}`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                  <div className="player-track-info">
+                    <strong>{selectedArtist.featuredTrack.title}</strong>
+                    <small>{selectedArtist.featuredTrack.format}</small>
+                  </div>
+                </div>
+
+                <div className="artist-socials-block">
+                  <h4>Redes Oficiales</h4>
+                  <div className="artist-social-pills">
+                    {selectedArtist.socials.map((soc) => (
+                      <a
+                        key={soc.platform}
+                        href={soc.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="artist-social-link"
+                      >
+                        {soc.platform} <ArrowUpRight size={13} />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="artist-booking-box">
+                  <p>Contratación directa y disponibilidad:</p>
+                  <a
+                    className="button button-whatsapp-modal"
+                    href={`https://wa.me/59169528962?text=${encodeURIComponent(
+                      `Hola SELVA MUSIC, deseo cotizar una presentación / contratación de ${selectedArtist.name}.`
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <MessageCircle size={18} />
+                    <span>Cotizar a {selectedArtist.name} por WhatsApp</span>
+                    <ArrowUpRight size={16} />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

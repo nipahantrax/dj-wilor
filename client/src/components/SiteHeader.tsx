@@ -2,10 +2,10 @@ import { ArrowUpRight, Menu, X } from "lucide-react";
 import { useState } from "react";
 
 const navigation = [
-  { label: "Portafolio", href: "#portafolio" },
-  { label: "Trayectoria", href: "#trayectoria" },
-  { label: "Producción", href: "#produccion" },
-  { label: "SELVA MUSIC", href: "#sello" },
+  { label: "Música", href: "#portafolio" },
+  { label: "Artistas", href: "#artistas" },
+  { label: "Servicios", href: "#produccion" },
+  { label: "Sello", href: "#sello" },
 ];
 
 export default function SiteHeader() {
