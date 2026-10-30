@@ -119,6 +119,16 @@ export const contact = {
 
 export const sealLink = "https://www.facebook.com/61591489856517/";
 
+export type Track = {
+  id: string;
+  title: string;
+  artist: string;
+  duration: string;
+  audioUrl: string;
+  coverUrl: string;
+  year?: string;
+};
+
 export type ArtistSocial = {
   platform: string;
   url: string;
@@ -143,7 +153,12 @@ export type Artist = {
   showFormat: string;
   bookingStatus: string;
   socials: ArtistSocial[];
+  tracks: Track[];
 };
+
+export const defaultDemoAudio = "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=tropical-house-113540.mp3";
+export const defaultDemoAudio2 = "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=summer-tropical-beat-10928.mp3";
+export const defaultDemoAudio3 = "https://cdn.pixabay.com/download/audio/2021/08/04/audio_31a293672d.mp3?filename=latin-urban-reggaeton-11090.mp3";
 
 export const rosterArtists: Artist[] = [
   {
@@ -174,6 +189,35 @@ export const rosterArtists: Artist[] = [
       { platform: "TikTok", url: "https://www.tiktok.com/@djwilor" },
       { platform: "Facebook", url: "https://www.facebook.com/WilorDj/" },
     ],
+    tracks: [
+      {
+        id: "w-track-1",
+        title: "Vuelve Vuelve",
+        artist: "DJ WILOR ft. Lesly CH & José Puyal",
+        duration: "3:18",
+        audioUrl: defaultDemoAudio,
+        coverUrl: "https://i.ytimg.com/vi/TlTuiVFTb0g/hqdefault.jpg",
+        year: "2026",
+      },
+      {
+        id: "w-track-2",
+        title: "Los Envidiosos",
+        artist: "DJ WILOR ft. Canseco Z.S. & Cumpa Dorian",
+        duration: "2:54",
+        audioUrl: defaultDemoAudio2,
+        coverUrl: "https://i.ytimg.com/vi/Jn05irCh1UQ/hqdefault.jpg",
+        year: "2026",
+      },
+      {
+        id: "w-track-3",
+        title: "Imilla Coqueta (Funk Mix)",
+        artist: "DJ WILOR ft. Pampeño",
+        duration: "2:45",
+        audioUrl: defaultDemoAudio3,
+        coverUrl: "https://i.ytimg.com/vi/P8i3iDciOhs/hqdefault.jpg",
+        year: "2026",
+      },
+    ],
   },
   {
     id: "emily-escobar",
@@ -201,6 +245,26 @@ export const rosterArtists: Artist[] = [
       { platform: "YouTube", url: "https://www.youtube.com/watch?v=hxXAdDaDedE" },
       { platform: "TikTok", url: "https://www.tiktok.com/@djwilor" },
     ],
+    tracks: [
+      {
+        id: "e-track-1",
+        title: "Chica Vacilona",
+        artist: "Emily ft. DJ WILOR",
+        duration: "2:40",
+        audioUrl: defaultDemoAudio,
+        coverUrl: "https://i.ytimg.com/vi/hxXAdDaDedE/hqdefault.jpg",
+        year: "2025",
+      },
+      {
+        id: "e-track-2",
+        title: "Quédate Conmigo (Remix)",
+        artist: "Emily Escobar",
+        duration: "3:05",
+        audioUrl: defaultDemoAudio3,
+        coverUrl: "https://i.ytimg.com/vi/hxXAdDaDedE/hqdefault.jpg",
+        year: "2026",
+      },
+    ],
   },
   {
     id: "canseco-dorian",
@@ -226,6 +290,26 @@ export const rosterArtists: Artist[] = [
     bookingStatus: "Disponible para Discotecas, Tardeadas & Conciertos Urbanos",
     socials: [
       { platform: "YouTube", url: "https://www.youtube.com/watch?v=Jn05irCh1UQ" },
+    ],
+    tracks: [
+      {
+        id: "c-track-1",
+        title: "Los Envidiosos (Original)",
+        artist: "Canseco Z.S. & Cumpa Dorian ft. WILOR",
+        duration: "3:02",
+        audioUrl: defaultDemoAudio2,
+        coverUrl: "https://i.ytimg.com/vi/Jn05irCh1UQ/hqdefault.jpg",
+        year: "2026",
+      },
+      {
+        id: "c-track-2",
+        title: "Zona Sur Flow",
+        artist: "Canseco Z.S.",
+        duration: "2:48",
+        audioUrl: defaultDemoAudio,
+        coverUrl: "https://i.ytimg.com/vi/Jn05irCh1UQ/hqdefault.jpg",
+        year: "2026",
+      },
     ],
   },
   {
@@ -253,6 +337,26 @@ export const rosterArtists: Artist[] = [
     socials: [
       { platform: "YouTube", url: "https://www.youtube.com/watch?v=91myZgOitUk" },
     ],
+    tracks: [
+      {
+        id: "g-track-1",
+        title: "LES DUELE VERME BIEN",
+        artist: "Gio Villarroel ft. DJ WILOR",
+        duration: "3:24",
+        audioUrl: defaultDemoAudio3,
+        coverUrl: "https://i.ytimg.com/vi/91myZgOitUk/hqdefault.jpg",
+        year: "2026",
+      },
+      {
+        id: "g-track-2",
+        title: "¿Qué Somos?",
+        artist: "Gio Villarroel",
+        duration: "2:55",
+        audioUrl: defaultDemoAudio,
+        coverUrl: "https://i.ytimg.com/vi/91myZgOitUk/hqdefault.jpg",
+        year: "2025",
+      },
+    ],
   },
   {
     id: "pampeno",
@@ -278,6 +382,17 @@ export const rosterArtists: Artist[] = [
     bookingStatus: "Disponible para Fiestas Patronales, Aniversarios & Discotecas",
     socials: [
       { platform: "YouTube", url: "https://www.youtube.com/watch?v=P8i3iDciOhs" },
+    ],
+    tracks: [
+      {
+        id: "p-track-1",
+        title: "Imilla Coqueta",
+        artist: "Pampeño ft. DJ WILOR",
+        duration: "2:46",
+        audioUrl: defaultDemoAudio3,
+        coverUrl: "https://i.ytimg.com/vi/P8i3iDciOhs/hqdefault.jpg",
+        year: "2026",
+      },
     ],
   },
   {
@@ -305,5 +420,20 @@ export const rosterArtists: Artist[] = [
     socials: [
       { platform: "Facebook", url: "https://www.facebook.com/61591489856517/" },
     ],
+    tracks: [
+      {
+        id: "y-track-1",
+        title: "Presentación Oficial SELVA MUSIC",
+        artist: "Yoniko y su Grupo Australia",
+        duration: "3:40",
+        audioUrl: defaultDemoAudio2,
+        coverUrl: "https://i.ytimg.com/vi/1khpnl4WE5g/hqdefault.jpg",
+        year: "2026",
+      },
+    ],
   },
 ];
+
+export function extractAllTracks(artists: Artist[]): Track[] {
+  return artists.flatMap((artist) => artist.tracks || []);
+}

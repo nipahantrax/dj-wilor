@@ -1,8 +1,10 @@
-import { ArrowDownRight, ArrowRight, ArrowUpRight, CheckCircle2, Disc3, Headphones, MapPin, MessageCircle, Mic2, Music2, Play, Radio, Sparkles, Users, X } from "lucide-react";
+import { ArrowDownRight, ArrowRight, ArrowUpRight, CheckCircle2, Disc3, Headphones, Lock, MapPin, MessageCircle, Mic2, Music2, Play, Radio, Sparkles, Users, X } from "lucide-react";
 import { useState } from "react";
 import type { ReactNode, SyntheticEvent } from "react";
+import AdminPanel from "@/components/AdminPanel";
+import AudioPlayer from "@/components/AudioPlayer";
 import SiteHeader from "@/components/SiteHeader";
-import { contact, milestones, rosterArtists, sealLink, socialLinks, works, type Artist } from "@/lib/wilorContent";
+import { contact, extractAllTracks, milestones, rosterArtists, sealLink, socialLinks, works, type Artist, type Track } from "@/lib/wilorContent";
 
 const heroImage = "./assets/hero-gta-tropico.jpg";
 const portraitImage = "./assets/wilor-profile.jpg";
@@ -58,12 +60,61 @@ function FeaturedPlayer() {
 }
 
 export default function Home() {
+  const [artists, setArtists] = useState<Artist[]>(() => {
+    try {
+      const saved = localStorage.getItem("selva_artists_roster");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return rosterArtists;
+  });
+
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
   const [activeCategory, setActiveCategory] = useState<"all" | "dj" | "vocal" | "group">("all");
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+
+  // Sistema de Audio Global
+  const allTracks = extractAllTracks(artists);
+  const [currentTrack, setCurrentTrack] = useState<Track | null>(() => allTracks[0] || null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const handlePlayTrack = (track: Track) => {
+    setCurrentTrack(track);
+    setIsPlaying(true);
+  };
+
+  const handleTogglePlay = () => {
+    setIsPlaying((prev) => !prev);
+  };
+
+  const handleNextTrack = () => {
+    if (!currentTrack || allTracks.length === 0) return;
+    const currentIndex = allTracks.findIndex((t) => t.id === currentTrack.id);
+    const nextIndex = (currentIndex + 1) % allTracks.length;
+    setCurrentTrack(allTracks[nextIndex]);
+    setIsPlaying(true);
+  };
+
+  const handlePrevTrack = () => {
+    if (!currentTrack || allTracks.length === 0) return;
+    const currentIndex = allTracks.findIndex((t) => t.id === currentTrack.id);
+    const prevIndex = (currentIndex - 1 + allTracks.length) % allTracks.length;
+    setCurrentTrack(allTracks[prevIndex]);
+    setIsPlaying(true);
+  };
+
+  const handleSaveArtists = (updated: Artist[]) => {
+    setArtists(updated);
+    try {
+      localStorage.setItem("selva_artists_roster", JSON.stringify(updated));
+    } catch (e) {}
+  };
 
   const filteredArtists = activeCategory === "all"
-    ? rosterArtists
-    : rosterArtists.filter((a) => a.category === activeCategory);
+    ? artists
+    : artists.filter((a) => a.category === activeCategory);
 
   return (
     <div className="site-shell">
@@ -209,7 +260,7 @@ export default function Home() {
               className={`filter-btn ${activeCategory === "all" ? "is-active" : ""}`}
               onClick={() => setActiveCategory("all")}
             >
-              <Music2 size={14} /> Todos ({rosterArtists.length})
+              <Music2 size={14} /> Todos ({artists.length})
             </button>
             <button
               type="button"
@@ -274,8 +325,21 @@ export default function Home() {
                   </h3>
                   <p className="artist-genre">{artist.genre}</p>
 
-                  <div className="artist-hit">
-                    <span className="hit-label">Hit destacado</span>
+                  <div
+                    className="artist-hit"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (artist.tracks && artist.tracks.length > 0) {
+                        handlePlayTrack(artist.tracks[0]);
+                      }
+                    }}
+                    title="Reproducir tema en el reproductor continuo"
+                  >
+                    <span className="hit-label">
+                      {artist.tracks && artist.tracks.some((t) => t.id === currentTrack?.id) && isPlaying
+                        ? "Reproduciendo ahora..."
+                        : "Hit destacado · Click para escuchar"}
+                    </span>
                     <div className="hit-track">
                       <Play size={12} fill="currentColor" />
                       <span>{artist.featuredTrack.title}</span>
@@ -388,7 +452,18 @@ export default function Home() {
           <a href="https://open.spotify.com/artist/6AiurSOGTBZe8MKSNCPuya" target="_blank" rel="noreferrer">Spotify</a>
           <a href="https://www.facebook.com/WilorDj/" target="_blank" rel="noreferrer">Facebook</a>
         </div>
-        <div className="footer-bottom"><span>© 2026 WILOR · Portafolio de música y trayectoria</span><a href="#inicio">Volver arriba <ArrowUpRight size={13} /></a></div>
+        <div className="footer-bottom">
+          <span>© 2026 WILOR · Portafolio de música y trayectoria</span>
+          <button
+            type="button"
+            className="footer-admin-trigger"
+            onClick={() => setIsAdminOpen(true)}
+            title="Panel Maestro de Administración"
+          >
+            <Lock size={12} /> Acceso Maestro SELVA MUSIC
+          </button>
+          <a href="#inicio">Volver arriba <ArrowUpRight size={13} /></a>
+        </div>
       </footer>
 
       <a
@@ -474,8 +549,46 @@ export default function Home() {
               </div>
 
               <div className="artist-modal-col">
+                {/* PLAYLIST DE CANCIONES DEL ARTISTA */}
+                {selectedArtist.tracks && selectedArtist.tracks.length > 0 && (
+                  <div className="artist-playlist-block">
+                    <h4>
+                      <Music2 size={15} /> Playlist del Artista ({selectedArtist.tracks.length})
+                    </h4>
+                    <div className="artist-modal-tracklist">
+                      {selectedArtist.tracks.map((tr, idx) => {
+                        const isCurrent = currentTrack?.id === tr.id;
+                        return (
+                          <div
+                            key={tr.id + idx}
+                            className={`modal-track-item ${isCurrent ? "is-active" : ""}`}
+                            onClick={() => handlePlayTrack(tr)}
+                          >
+                            <span className="modal-track-num">
+                              {isCurrent && isPlaying ? (
+                                <span className="audio-equalizer-sm">
+                                  <i />
+                                  <i />
+                                  <i />
+                                </span>
+                              ) : (
+                                <Play size={12} fill="currentColor" />
+                              )}
+                            </span>
+                            <div className="modal-track-meta">
+                              <strong>{tr.title}</strong>
+                              <span>{tr.artist}</span>
+                            </div>
+                            <span className="modal-track-dur">{tr.duration}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <div className="artist-player-block">
-                  <h4>Lanzamiento Destacado</h4>
+                  <h4>Videoclip / Lanzamiento</h4>
                   <div className="artist-video-container">
                     <iframe
                       src={`https://www.youtube-nocookie.com/embed/${selectedArtist.featuredTrack.youtubeId}?rel=0`}
@@ -527,6 +640,25 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* Reproductor de Audio Continuo Global */}
+      <AudioPlayer
+        tracks={allTracks}
+        currentTrack={currentTrack}
+        isPlaying={isPlaying}
+        onPlayTrack={handlePlayTrack}
+        onTogglePlay={handleTogglePlay}
+        onNextTrack={handleNextTrack}
+        onPrevTrack={handlePrevTrack}
+      />
+
+      {/* Panel de Administración CMS Maestro */}
+      <AdminPanel
+        isOpen={isAdminOpen}
+        onClose={() => setIsAdminOpen(false)}
+        artists={artists}
+        onSaveArtists={handleSaveArtists}
+      />
     </div>
   );
 }
