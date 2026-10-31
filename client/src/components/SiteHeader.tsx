@@ -20,14 +20,10 @@ export default function SiteHeader({
   onNavigate,
   onOpenAdmin,
 }: SiteHeaderProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const closeMenu = () => setMenuOpen(false);
-
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     if (onNavigate) {
       e.preventDefault();
       onNavigate(id);
-      closeMenu();
     }
   };
 
@@ -42,22 +38,8 @@ export default function SiteHeader({
         <SelvaLogo variant="full" size="md" />
       </a>
 
-      <button
-        className="menu-toggle"
-        type="button"
-        aria-controls="main-navigation"
-        aria-expanded={menuOpen}
-        aria-label={menuOpen ? "Cerrar navegación" : "Abrir navegación"}
-        onClick={() => setMenuOpen((current) => !current)}
-      >
-        {menuOpen ? <X size={22} /> : <Menu size={22} />}
-      </button>
-
-      <nav
-        id="main-navigation"
-        className={`main-navigation${menuOpen ? " is-open" : ""}`}
-        aria-label="Navegación principal"
-      >
+      {/* Navegación para PC / Pantallas medianas */}
+      <nav id="main-navigation" className="main-navigation" aria-label="Navegación principal">
         {navigation.map((item) => {
           const isActive = activeSection === item.id;
           return (
@@ -86,16 +68,28 @@ export default function SiteHeader({
           <button
             type="button"
             className="nav-admin-btn"
-            onClick={() => {
-              closeMenu();
-              onOpenAdmin();
-            }}
+            onClick={onOpenAdmin}
             title="Panel de Control Maestro SELVA MUSIC GROUP"
           >
             <Lock size={13} /> Acceso Maestro
           </button>
         )}
       </nav>
+
+      {/* Botón Acceso Maestro directo en Celulares (Reemplaza la hamburguesa redundante) */}
+      <div className="mobile-header-actions">
+        {onOpenAdmin && (
+          <button
+            type="button"
+            className="mobile-header-admin-pill"
+            onClick={onOpenAdmin}
+            title="Acceso Maestro SELVA MUSIC"
+          >
+            <Lock size={12} />
+            <span>Maestro</span>
+          </button>
+        )}
+      </div>
     </header>
   );
 }

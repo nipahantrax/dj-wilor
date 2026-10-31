@@ -156,6 +156,45 @@ export default function AudioPlayer({
     window.addEventListener("pointercancel", handlePointerUp);
   };
 
+    // Ocultar elementos flotantes inferiores en móvil cuando se expande la consola
+  useEffect(() => {
+    if (!isBubbleMode) {
+      document.body.classList.add("has-expanded-audio-player");
+    } else {
+      document.body.classList.remove("has-expanded-audio-player");
+    }
+    return () => {
+      document.body.classList.remove("has-expanded-audio-player");
+    };
+  }, [isBubbleMode]);
+
+    // Función síncrona directa para pasar la política de reproducción segura del navegador
+  const handleTogglePlaySync = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!isPlaying) {
+      if (ytPlayerRef.current && typeof ytPlayerRef.current.playVideo === "function") {
+        try {
+          ytPlayerRef.current.unMute();
+          ytPlayerRef.current.setVolume(Math.round(volume * 100));
+          ytPlayerRef.current.playVideo();
+        } catch (err) {
+          console.warn("Direct play error:", err);
+        }
+      }
+    } else {
+      if (ytPlayerRef.current && typeof ytPlayerRef.current.pauseVideo === "function") {
+        try {
+          ytPlayerRef.current.pauseVideo();
+        } catch (err) {}
+      }
+    }
+    onTogglePlay();
+    if (needsUserUnmute) handleForceUnmute();
+  };
+
   const activeTrack = currentTrack || tracks[0];
 
   // 1. Cargar YouTube IFrame API de forma asíncrona
@@ -358,12 +397,7 @@ export default function AudioPlayer({
       {/* Motor de Audio en Segundo Plano */}
       <div
         style={{
-          position: "fixed",
-          bottom: "-500px",
-          left: "-500px",
-          width: "200px",
-          height: "200px",
-          opacity: 0.001,
+          position: "fixed", bottom: "0", right: "0", width: "2px", height: "2px", opacity: 0.01,
           pointerEvents: "none",
           zIndex: -1,
         }}
@@ -458,6 +492,9 @@ export default function AudioPlayer({
                 return;
               }
               setIsBubbleMode(false);
+              if (!isPlaying) {
+                handleTogglePlaySync(e);
+              }
             }}
             title={`🎵 ${activeTrack.title} — Arrastra libremente por la pantalla en PC o móvil / Toca para abrir`}
             aria-label="Abrir reproductor de música"
@@ -487,10 +524,8 @@ export default function AudioPlayer({
             <span
               className="circle-play-badge"
               onClick={(e) => {
-                e.stopPropagation();
                 if (dragRef.current.hasDragged) return;
-                onTogglePlay();
-                if (needsUserUnmute) handleForceUnmute();
+                handleTogglePlaySync(e);
               }}
               title={isPlaying ? "Pausar música" : "Reproducir música"}
             >
@@ -564,10 +599,7 @@ export default function AudioPlayer({
                 <button
                   type="button"
                   className="audio-btn-play"
-                  onClick={() => {
-                    onTogglePlay();
-                    if (needsUserUnmute) handleForceUnmute();
-                  }}
+                  onClick={(e) => handleTogglePlaySync(e)}
                   aria-label={isPlaying ? "Pausar música" : "Reproducir música"}
                 >
                   {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}

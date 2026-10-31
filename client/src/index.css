@@ -5514,3 +5514,96 @@ img { display: block; max-width: 100%; }
   pointer-events: none;
   z-index: 2;
 }
+
+
+/* =============================================================================
+   AJUSTES CRÍTICOS DE CONVIVENCIA: CONSOLA DE AUDIO VS DOCK MÓVIL
+   ============================================================================= */
+
+/* Botón Acceso Maestro en Header Móvil */
+.mobile-header-actions {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .site-header {
+    height: 64px !important;
+    padding: 0 16px !important;
+  }
+
+  .main-navigation {
+    display: none !important;
+  }
+
+  .mobile-header-actions {
+    display: flex;
+    align-items: center;
+  }
+
+  .mobile-header-admin-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    color: #FFECA8;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+    transition: all 180ms ease;
+  }
+
+  .mobile-header-admin-pill:active {
+    background: linear-gradient(135deg, #FFF3B8, #D4AF37);
+    color: #060708;
+    transform: scale(0.95);
+  }
+
+  /* WhatsApp flotante en móviles: posicionado arriba del dock */
+  .floating-whatsapp {
+    bottom: 82px !important;
+    right: 14px !important;
+    padding: 10px 16px !important;
+    font-size: 10px !important;
+  }
+}
+
+/* Cuando la consola está expandida, ocultar suavemente el dock para que no tape los controles */
+body.has-expanded-audio-player .mobile-app-dock {
+  transform: translateX(-50%) translateY(140px) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: all 260ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+body.has-expanded-audio-player .floating-whatsapp {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(20px) !important;
+  transition: all 200ms ease !important;
+}
+
+/* La Consola de Audio SIEMPRE está por encima de todo con z-index absoluto */
+.global-audio-bar.is-expanded-mode {
+  z-index: 9999999 !important;
+}
+
+@media (max-width: 900px) {
+  .global-audio-bar.is-expanded-mode {
+    position: fixed !important;
+    left: 8px !important;
+    right: 8px !important;
+    bottom: 10px !important;
+    max-height: 85vh !important;
+    overflow-y: auto !important;
+    z-index: 9999999 !important;
+    border-radius: 14px !important;
+    border: 1.5px solid rgba(212, 175, 55, 0.5) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.98), 0 0 35px rgba(212, 175, 55, 0.35) !important;
+  }
+}
