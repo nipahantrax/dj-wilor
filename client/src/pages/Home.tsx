@@ -1,9 +1,11 @@
 import { ArrowDownRight, ArrowRight, ArrowUpRight, Calendar, CheckCircle2, Disc3, Headphones, Image as ImageIcon, Lock, MapPin, MessageCircle, Mic2, Music2, Pause, Play, Radio, RotateCcw, RotateCw, SkipBack, SkipForward, Sparkles, Users, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode, SyntheticEvent } from "react";
 import AdminPanel from "@/components/AdminPanel";
 import AudioPlayer from "@/components/AudioPlayer";
 import BookingModal from "@/components/BookingModal";
+import GoldSparks from "@/components/GoldSparks";
+import MobileAppDock from "@/components/MobileAppDock";
 import SelvaLogo from "@/components/SelvaLogo";
 import SiteHeader from "@/components/SiteHeader";
 import { contact, extractAllTracks, initialBookings, milestones, rosterArtists, ROSTER_VERSION, sealLink, socialLinks, works, type Artist, type EventBooking, type Track } from "@/lib/wilorContent";
@@ -101,6 +103,61 @@ export default function Home() {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [bookingArtist, setBookingArtist] = useState<Artist | null>(null);
 
+  // Sistema de Navegación de Élite con Transición Cinematográfica (Sin scroll feo)
+  const [activeSection, setActiveSection] = useState("inicio");
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [highlightSection, setHighlightSection] = useState<string | null>(null);
+
+  const handleNavigate = (sectionId: string) => {
+    setIsTransitioning(true);
+    setActiveSection(sectionId);
+    setHighlightSection(sectionId);
+
+    setTimeout(() => {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        const headerOffset = 78;
+        const elementPosition = el.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - headerOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "instant" as any,
+        });
+      }
+
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 140);
+
+      setTimeout(() => {
+        setHighlightSection((prev) => (prev === sectionId ? null : prev));
+      }, 1900);
+    }, 110);
+  };
+
+  // Observador para actualizar el Dock y Header según la posición real de scroll
+  useEffect(() => {
+    const sectionIds = ["inicio", "portafolio", "trayectoria", "produccion", "artistas", "sello", "contacto"];
+    const handleScroll = () => {
+      const scrollPos = window.scrollY + 140;
+      for (const id of sectionIds) {
+        const el = document.getElementById(id);
+        if (el) {
+          const top = el.offsetTop;
+          const height = el.offsetHeight;
+          if (scrollPos >= top && scrollPos < top + height) {
+            setActiveSection(id);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const handleOpenBooking = (art: Artist) => {
     setBookingArtist(art);
     setIsBookingModalOpen(true);
@@ -188,12 +245,13 @@ export default function Home() {
   return (
     <div className="site-shell">
       <a className="skip-link" href="#contenido">Saltar al contenido</a>
-      <SiteHeader onOpenAdmin={() => setIsAdminOpen(true)} />
+      <SiteHeader activeSection={activeSection} onNavigate={handleNavigate} onOpenAdmin={() => setIsAdminOpen(true)} />
       <main id="contenido">
         <section className="hero" id="inicio" aria-labelledby="hero-title">
           <img className="hero-image" src={heroImage} onError={fallbackImage("https://i.ytimg.com/vi/TlTuiVFTb0g/maxresdefault.jpg")} alt="Visual de una presentación en vivo relacionada con el portafolio de WILOR." />
           <div className="hero-vignette" aria-hidden="true" />
           <div className="hero-grain" aria-hidden="true" />
+          <GoldSparks />
           <div className="hero-inner">
             <div className="hero-logo-badge mb-5">
               <SelvaLogo variant="full" size="lg" />
@@ -203,10 +261,10 @@ export default function Home() {
             <div className="hero-lower">
               <p className="hero-copy">El sello discográfico y plataforma de management de élite del Trópico de Cochabamba, Bolivia. Fundado por DJ WILOR para producir, potenciar y exportar la nueva generación de la música urbana y tropical.</p>
               <div className="hero-actions">
-                <a className="button button-lime" href="#artistas">
+                <a className="button button-lime btn-animate-press" href="#artistas" onClick={(e) => { e.preventDefault(); handleNavigate("artistas"); }}>
                   Roster de Artistas <ArrowUpRight size={16} />
                 </a>
-                <a className="text-link" href="#portafolio">Catálogo Musical <ArrowDownRight size={17} /></a>
+                <a className="text-link" href="#portafolio" onClick={(e) => { e.preventDefault(); handleNavigate("portafolio"); }}>Catálogo Musical <ArrowDownRight size={17} /></a>
               </div>
             </div>
             <div className="hero-index" aria-hidden="true"><span>ARTISTA DEL TRÓPICO</span><span>COCHABAMBA · BOLIVIA</span></div>
@@ -223,7 +281,7 @@ export default function Home() {
           <span>SELVA MUSIC GROUP</span><i aria-hidden="true">✦</i><span>ROSTER DE ARTISTAS DE ÉLITE</span><i aria-hidden="true">✦</i><span>PRODUCCIÓN MUSICAL & MANAGEMENT</span><i aria-hidden="true">✦</i><span>TRÓPICO DE COCHABAMBA · BOLIVIA</span>
         </div>
 
-        <section className="portfolio-section section-wrap" id="portafolio" aria-labelledby="portfolio-title">
+        <section className={`portfolio-section section-wrap ${highlightSection === "portafolio" ? "section-active-focus" : ""}`} id="portafolio" aria-labelledby="portfolio-title">
           <div className="section-heading">
             <SectionKicker index="01">OBRA SELECCIONADA</SectionKicker>
             <div className="heading-row">
@@ -267,7 +325,7 @@ export default function Home() {
           <div className="portfolio-footer"><p>Catálogo oficial de lanzamientos y colaboraciones discográficas.</p><a className="text-link text-link-dark" href="https://www.youtube.com/@Wilordj" target="_blank" rel="noreferrer">Ver canal oficial <ArrowUpRight size={15} /></a></div>
         </section>
 
-        <section className="story-section" id="trayectoria" aria-labelledby="story-title">
+        <section className={`story-section ${highlightSection === "trayectoria" ? "section-active-focus" : ""}`} id="trayectoria" aria-labelledby="story-title">
           <div className="story-image-wrap">
             <img src={portraitImage} alt="Retrato de perfil publicado por WILOR en Spotify." loading="lazy" />
             <a className="image-source" href="https://open.spotify.com/artist/6AiurSOGTBZe8MKSNCPuya" target="_blank" rel="noreferrer">IMAGEN DEL PERFIL DE ARTISTA · SPOTIFY <ArrowUpRight size={13} /></a>
@@ -289,7 +347,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="production-section section-wrap" id="produccion" aria-labelledby="production-title">
+        <section className={`production-section section-wrap ${highlightSection === "produccion" ? "section-active-focus" : ""}`} id="produccion" aria-labelledby="production-title">
           <div className="production-photo">
             <img src="https://i.ytimg.com/vi/91myZgOitUk/hqdefault.jpg" alt="Miniatura del videoclip LES DUELE VERME BIEN, colaboración de WILOR y Gio Villarroel." loading="lazy" />
             <a className="photo-caption" href="https://www.youtube.com/watch?v=91myZgOitUk" target="_blank" rel="noreferrer">VIDEO OFICIAL · LES DUELE VERME BIEN <ArrowUpRight size={11} /></a>
@@ -307,14 +365,14 @@ export default function Home() {
               <div><span>05</span><strong>Distribución Digital Global</strong><small>Lanzamientos en Spotify, Apple Music, YouTube y TikTok con SELVA MUSIC Group.</small></div>
               <div><span>06</span><strong>Desarrollo Artístico & A&R</strong><small>Dirección ejecutiva, proyección de imagen y gestión para artistas emergentes.</small></div>
             </div>
-            <a className="button button-lime production-cta" href="#contacto">Hablemos de tu proyecto <ArrowRight size={16} /></a>
+            <a className="button button-lime production-cta btn-animate-press" href="#contacto" onClick={(e) => { e.preventDefault(); handleNavigate("contacto"); }}>Hablemos de tu proyecto <ArrowRight size={16} /></a>
           </div>
         </section>
 
         {/* =========================================================================
             SECCIÓN 04: ROSTER DE ARTISTAS DE SELVA MUSIC GROUP
            ========================================================================= */}
-        <section className="roster-section section-wrap" id="artistas" aria-labelledby="roster-title">
+        <section className={`roster-section section-wrap ${highlightSection === "artistas" ? "section-active-focus" : ""}`} id="artistas" aria-labelledby="roster-title">
           <div className="section-heading">
             <SectionKicker index="04">ROSTER OFICIAL · SELVA MUSIC GROUP</SectionKicker>
             <div className="heading-row">
@@ -451,7 +509,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="label-section" id="sello" aria-labelledby="label-title">
+        <section className={`label-section ${highlightSection === "sello" ? "section-active-focus" : ""}`} id="sello" aria-labelledby="label-title">
           <div className="label-orbit label-orbit-one" aria-hidden="true" />
           <div className="label-orbit label-orbit-two" aria-hidden="true" />
           <div className="label-inner">
@@ -464,7 +522,7 @@ export default function Home() {
               <div className="label-description">
                 <p>SELVA MUSIC Group es el sello discográfico independiente fundado por WILOR en el Trópico de Cochabamba, enfocado en descubrir, producir y proyectar las nuevas voces y talentos de la música urbana y tropical boliviana hacia el mercado internacional.</p>
                 <div className="label-actions-row">
-                  <a className="button button-outline" href={sealLink} target="_blank" rel="noreferrer">Visitar página del sello <ArrowUpRight size={16} /></a>
+                  <a className="button button-outline btn-animate-press" href="#sello" onClick={(e) => { e.preventDefault(); handleNavigate("sello"); }}>Visitar detalles del sello <ArrowUpRight size={16} /></a>
                   <button type="button" className="button button-admin-badge" onClick={() => setIsAdminOpen(true)}>
                     <Lock size={14} /> Panel Maestro del Sello
                   </button>
@@ -505,7 +563,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="contact-section" id="contacto" aria-labelledby="contact-title">
+        <section className={`contact-section ${highlightSection === "contacto" ? "section-active-focus" : ""}`} id="contacto" aria-labelledby="contact-title">
           <div className="contact-content">
             <SectionKicker index="07">BOOKING · CONTRATACIONES · PROYECTOS</SectionKicker>
             <h2 id="contact-title">¿Hacemos<br /><em>que suene?</em></h2>
@@ -896,6 +954,14 @@ export default function Home() {
         onSaveBookings={handleSaveBookings}
         onPlayTrack={handlePlayTrack}
       />
-    </div>
+    
+      {/* Cortina de Transición de Élite (Flash Shimmer de Oro) */}
+      <div className={`luxury-transition-curtain ${isTransitioning ? "is-active" : ""}`} aria-hidden="true">
+        <div className="curtain-gold-glow" />
+      </div>
+
+      {/* Barra de Navegación Móvil Estilo App Nativa de Lujo */}
+      <MobileAppDock activeSection={activeSection} onNavigate={handleNavigate} />
+</div>
   );
 }
