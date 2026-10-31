@@ -1,21 +1,15 @@
 import {
   ChevronDown,
-  ChevronUp,
-  FastForward,
   ListMusic,
-  Maximize2,
   Minimize2,
-  Music2,
   Pause,
   Play,
   RotateCcw,
   RotateCw,
   SkipBack,
   SkipForward,
-  Tv,
   Volume2,
   VolumeX,
-  X,
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import type { Track } from "@/lib/wilorContent";
@@ -34,10 +28,21 @@ interface AudioPlayerProps {
 
 declare global {
   interface Window {
-    onYouTubeIframeAPIReady?: () => void;
-    YT?: any;
     selvaAudioPlayer?: any;
   }
+}
+
+// Convertidor de duración "mm:ss" a segundos
+function parseDurationSecs(durStr?: string): number {
+  if (!durStr) return 180;
+  const parts = durStr.split(":").map(Number);
+  if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+    return parts[0] * 60 + parts[1];
+  }
+  if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  }
+  return 180;
 }
 
 export default function AudioPlayer({
@@ -49,19 +54,20 @@ export default function AudioPlayer({
   onNextTrack,
   onPrevTrack,
 }: AudioPlayerProps) {
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const ytPlayerRef = useRef<any>(null);
 
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.9);
   const [isMuted, setIsMuted] = useState(false);
-  const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
-  const [isYtApiReady, setIsYtApiReady] = useState(false);
-  const [isBubbleMode, setIsBubbleMode] = useState(true); // Inicia como burbuja flotante moderna
-  const [needsUserUnmute, setNeedsUserUnmute] = useState(false);
+  const [isBubbleMode, setIsBubbleMode] = useState(true); // Inicia en modo disco compacto
 
-  // Posición libre movible en pantalla (Draggable en Móviles, Tablets y PC)
+  const activeTrack = currentTrack || tracks[0];
+  const expectedDuration = parseDurationSecs(activeTrack?.duration);
+  const totalDuration = duration > 0 ? duration : expectedDuration;
+
+  // Posición movible libremente en pantalla (Draggable)
   const [fabPos, setFabPos] = useState<{ x: number; y: number } | null>(() => {
     try {
       const saved = localStorage.getItem("selva_fab_pos");
@@ -86,22 +92,13 @@ export default function AudioPlayer({
     hasDragged: false,
   });
 
+  // Manejo de arrastre sin bloquear los clics de ratón en PC
   const handlePointerDownFab = (e: React.PointerEvent<HTMLElement>) => {
-    // Solo clic izquierdo o toque primario
-    if (e.button !== 0) return;
+    if (e.button !== 0) return; // Solo clic primario
 
-    // Crucial para PC: previene el inicio de drag nativo de imagen (ghost drag) y selección
-    e.preventDefault();
-
-    const target = e.currentTarget;
-    try {
-      target.setPointerCapture(e.pointerId);
-    } catch {}
-
-    const rect = target.getBoundingClientRect();
-
+    const rect = e.currentTarget.getBoundingClientRect();
     dragRef.current = {
-      isDragging: true,
+      isDragging: false,
       startX: e.clientX,
       startY: e.clientY,
       initialX: rect.left,
@@ -110,31 +107,29 @@ export default function AudioPlayer({
     };
 
     const handlePointerMove = (ev: PointerEvent) => {
-      if (!dragRef.current.isDragging) return;
       const dx = ev.clientX - dragRef.current.startX;
       const dy = ev.clientY - dragRef.current.startY;
 
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      // Solo activar arrastre si el movimiento supera el umbral de 6px
+      if (!dragRef.current.isDragging && Math.hypot(dx, dy) > 6) {
+        dragRef.current.isDragging = true;
         dragRef.current.hasDragged = true;
       }
 
-      const fabSize = 58;
-      const padding = 10;
-      const maxX = Math.max(padding, window.innerWidth - fabSize - padding);
-      const maxY = Math.max(padding, window.innerHeight - fabSize - padding);
+      if (dragRef.current.isDragging) {
+        const fabSize = 58;
+        const pad = 12;
+        const maxX = Math.max(pad, window.innerWidth - fabSize - pad);
+        const maxY = Math.max(pad, window.innerHeight - fabSize - pad);
 
-      const targetX = Math.min(Math.max(padding, dragRef.current.initialX + dx), maxX);
-      const targetY = Math.min(Math.max(padding, dragRef.current.initialY + dy), maxY);
+        const targetX = Math.min(Math.max(pad, dragRef.current.initialX + dx), maxX);
+        const targetY = Math.min(Math.max(pad, dragRef.current.initialY + dy), maxY);
 
-      setFabPos({ x: targetX, y: targetY });
+        setFabPos({ x: targetX, y: targetY });
+      }
     };
 
-    const handlePointerUp = (ev: PointerEvent) => {
-      dragRef.current.isDragging = false;
-      try {
-        target.releasePointerCapture(e.pointerId);
-      } catch {}
-
+    const handlePointerUp = () => {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointercancel", handlePointerUp);
@@ -156,7 +151,7 @@ export default function AudioPlayer({
     window.addEventListener("pointercancel", handlePointerUp);
   };
 
-    // Ocultar elementos flotantes inferiores en móvil cuando se expande la consola
+  // Ocultar dock móvil cuando el reproductor ocupa media pantalla
   useEffect(() => {
     if (!isBubbleMode) {
       document.body.classList.add("has-expanded-audio-player");
@@ -168,200 +163,112 @@ export default function AudioPlayer({
     };
   }, [isBubbleMode]);
 
-    // Función síncrona directa para pasar la política de reproducción segura del navegador
-  const handleTogglePlaySync = (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
+  // Enviar comandos al iframe de YouTube de forma universal
+  const sendIframeCommand = (func: string, args: any[] = []) => {
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      try {
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func, args }),
+          "*"
+        );
+      } catch (e) {}
     }
-    if (!isPlaying) {
-      if (ytPlayerRef.current && typeof ytPlayerRef.current.playVideo === "function") {
-        try {
-          ytPlayerRef.current.unMute();
-          ytPlayerRef.current.setVolume(Math.round(volume * 100));
-          ytPlayerRef.current.playVideo();
-        } catch (err) {
-          console.warn("Direct play error:", err);
-        }
-      }
-    } else {
-      if (ytPlayerRef.current && typeof ytPlayerRef.current.pauseVideo === "function") {
-        try {
-          ytPlayerRef.current.pauseVideo();
-        } catch (err) {}
-      }
-    }
-    onTogglePlay();
-    if (needsUserUnmute) handleForceUnmute();
   };
 
-  const activeTrack = currentTrack || tracks[0];
-
-  // 1. Cargar YouTube IFrame API de forma asíncrona
+  // Escuchar mensajes de estado de YouTube
   useEffect(() => {
-    if (window.YT && window.YT.Player) {
-      setIsYtApiReady(true);
-      return;
-    }
+    const handleWindowMessage = (e: MessageEvent) => {
+      try {
+        const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+        if (!data) return;
 
-    const tag = document.createElement("script");
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName("script")[0];
-    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-
-    window.onYouTubeIframeAPIReady = () => {
-      setIsYtApiReady(true);
+        if (data.event === "onStateChange") {
+          // 0 = terminó la canción
+          if (data.info === 0) {
+            onNextTrack();
+          }
+        }
+        if (data.info) {
+          if (typeof data.info.duration === "number" && data.info.duration > 0) {
+            setDuration(data.info.duration);
+          }
+          if (typeof data.info.currentTime === "number") {
+            setCurrentTime(data.info.currentTime);
+          }
+        }
+      } catch (err) {}
     };
-  }, []);
 
-  // 2. Inicializar o actualizar el reproductor de YouTube
+    window.addEventListener("message", handleWindowMessage);
+    return () => window.removeEventListener("message", handleWindowMessage);
+  }, [onNextTrack]);
+
+  // Manejo de Play / Pause sincronizado con el iframe
   useEffect(() => {
-    if (!isYtApiReady || !activeTrack?.youtubeId) return;
-
-    if (!ytPlayerRef.current) {
-      try {
-        ytPlayerRef.current = new window.YT.Player("selva-yt-monitor", {
-          height: "100%",
-          width: "100%",
-          videoId: activeTrack.youtubeId,
-          playerVars: {
-            autoplay: isPlaying ? 1 : 0,
-            controls: 1,
-            modestbranding: 1,
-            rel: 0,
-            playsinline: 1,
-            enablejsapi: 1,
-            origin: window.location.origin,
-          },
-          events: {
-            onReady: (event: any) => {
-              try {
-                event.target.unMute();
-                event.target.setVolume(Math.round(volume * 100));
-                if (isPlaying) {
-                  event.target.playVideo();
-                }
-              } catch (e) {}
-            },
-            onStateChange: (event: any) => {
-              if (event.data === 0) {
-                onNextTrack();
-              }
-              if (event.data === 1 && event.target.isMuted && event.target.isMuted()) {
-                setNeedsUserUnmute(true);
-              } else if (event.data === 1) {
-                setNeedsUserUnmute(false);
-              }
-            },
-          },
-        });
-      } catch (e) {
-        console.error("YT Player init error:", e);
-      }
-    } else if (typeof ytPlayerRef.current.loadVideoById === "function") {
-      try {
-        ytPlayerRef.current.loadVideoById(activeTrack.youtubeId);
-        ytPlayerRef.current.unMute();
-        ytPlayerRef.current.setVolume(Math.round(volume * 100));
-        if (isPlaying) {
-          ytPlayerRef.current.playVideo();
-        }
-      } catch (e) {}
-    }
-  }, [isYtApiReady, activeTrack?.id]);
-
-  // 3. Manejo de Play / Pause
-  useEffect(() => {
-    if (activeTrack?.youtubeId && ytPlayerRef.current && typeof ytPlayerRef.current.getPlayerState === "function") {
-      try {
-        if (isPlaying) {
-          ytPlayerRef.current.unMute();
-          ytPlayerRef.current.setVolume(Math.round(volume * 100));
-          ytPlayerRef.current.playVideo();
-        } else {
-          ytPlayerRef.current.pauseVideo();
-        }
-      } catch (e) {}
-    } else if (activeTrack?.audioUrl && audioRef.current) {
-      if (isPlaying) {
+    if (isPlaying) {
+      sendIframeCommand("playVideo");
+      sendIframeCommand("unMute");
+      sendIframeCommand("setVolume", [Math.round((isMuted ? 0 : volume) * 100)]);
+      if (audioRef.current) {
         audioRef.current.play().catch(() => {});
-      } else {
+      }
+    } else {
+      sendIframeCommand("pauseVideo");
+      if (audioRef.current) {
         audioRef.current.pause();
       }
     }
   }, [isPlaying]);
 
-  // 4. Manejo de volumen y mute
+  // Reiniciar tiempo al cambiar de pista
   useEffect(() => {
-    const currentVol = isMuted ? 0 : volume;
+    setCurrentTime(0);
+    setDuration(expectedDuration);
+  }, [activeTrack?.id]);
 
-    if (audioRef.current) {
-      audioRef.current.volume = currentVol;
-    }
-
-    if (ytPlayerRef.current && typeof ytPlayerRef.current.setVolume === "function") {
-      try {
-        if (isMuted) {
-          ytPlayerRef.current.mute();
-        } else {
-          ytPlayerRef.current.unMute();
-          ytPlayerRef.current.setVolume(Math.round(currentVol * 100));
+  // Timer para mover suavemente la barra de tiempo mientras se reproduce
+  useEffect(() => {
+    if (!isPlaying) return;
+    const timer = setInterval(() => {
+      setCurrentTime((prev) => {
+        if (totalDuration > 0 && prev >= totalDuration) {
+          return prev;
         }
-      } catch (e) {}
+        return prev + 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isPlaying, totalDuration]);
+
+  // Control directo de Play / Pause garantizado al clic
+  const handleTogglePlayDirect = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
     }
-  }, [volume, isMuted]);
+    if (!isPlaying) {
+      sendIframeCommand("unMute");
+      sendIframeCommand("setVolume", [Math.round((isMuted ? 0 : volume) * 100)]);
+      sendIframeCommand("playVideo");
+    } else {
+      sendIframeCommand("pauseVideo");
+    }
+    onTogglePlay();
+  };
 
-  // 5. Loop de sincronización de tiempo
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (activeTrack?.youtubeId && ytPlayerRef.current && typeof ytPlayerRef.current.getCurrentTime === "function") {
-        try {
-          const cur = ytPlayerRef.current.getCurrentTime() || 0;
-          const dur = ytPlayerRef.current.getDuration() || 0;
-          setCurrentTime(cur);
-          if (dur > 0) setDuration(dur);
-        } catch (e) {}
-      } else if (audioRef.current && !activeTrack?.youtubeId) {
-        setCurrentTime(audioRef.current.currentTime || 0);
-        setDuration(audioRef.current.duration || 0);
-      }
-    }, 400);
-
-    return () => clearInterval(interval);
-  }, [activeTrack]);
-
-  // Exponer API global para el reproductor de cada artista
-  useEffect(() => {
-    window.selvaAudioPlayer = {
-      seekBy: (offset: number) => handleSeekBy(offset),
-      seekTo: (seconds: number) => handleDirectSeek(seconds),
-      currentTime,
-      duration,
-      isPlaying,
-    };
-  }, [currentTime, duration, isPlaying]);
-
-  const handleForceUnmute = () => {
-    if (ytPlayerRef.current && typeof ytPlayerRef.current.unMute === "function") {
-      try {
-        ytPlayerRef.current.unMute();
-        ytPlayerRef.current.setVolume(100);
-        ytPlayerRef.current.playVideo();
-        setIsMuted(false);
-        setNeedsUserUnmute(false);
-      } catch (e) {}
+  // Abrir consola de media pantalla al dar clic al disco
+  const handleOpenHalfScreen = (e: React.MouseEvent) => {
+    if (dragRef.current.hasDragged) return;
+    setIsBubbleMode(false);
+    if (!isPlaying) {
+      handleTogglePlayDirect(e);
     }
   };
 
   const handleDirectSeek = (seconds: number) => {
-    const target = Math.max(0, Math.min(seconds, duration || 9999));
+    const target = Math.max(0, Math.min(seconds, totalDuration));
     setCurrentTime(target);
-
-    if (activeTrack?.youtubeId && ytPlayerRef.current && typeof ytPlayerRef.current.seekTo === "function") {
-      try {
-        ytPlayerRef.current.seekTo(target, true);
-      } catch (e) {}
-    } else if (audioRef.current) {
+    sendIframeCommand("seekTo", [target, true]);
+    if (audioRef.current) {
       audioRef.current.currentTime = target;
     }
   };
@@ -374,8 +281,42 @@ export default function AudioPlayer({
     handleDirectSeek(Number(e.target.value));
   };
 
+  const handleVolumeChange = (newVol: number) => {
+    setVolume(newVol);
+    if (isMuted) setIsMuted(false);
+    sendIframeCommand("setVolume", [Math.round(newVol * 100)]);
+    if (audioRef.current) {
+      audioRef.current.volume = newVol;
+    }
+  };
+
+  const toggleMute = () => {
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    sendIframeCommand(nextMuted ? "mute" : "unMute");
+    if (!nextMuted) {
+      sendIframeCommand("setVolume", [Math.round(volume * 100)]);
+    }
+    if (audioRef.current) {
+      audioRef.current.muted = nextMuted;
+    }
+  };
+
+  // Exponer API global
+  useEffect(() => {
+    window.selvaAudioPlayer = {
+      seekBy: (offset: number) => handleSeekBy(offset),
+      seekTo: (seconds: number) => handleDirectSeek(seconds),
+      currentTime,
+      duration: totalDuration,
+      isPlaying,
+      openHalfScreen: () => setIsBubbleMode(false),
+      closeHalfScreen: () => setIsBubbleMode(true),
+    };
+  }, [currentTime, totalDuration, isPlaying]);
+
   const formatTime = (secs: number) => {
-    if (isNaN(secs)) return "0:00";
+    if (isNaN(secs) || secs < 0) return "0:00";
     const minutes = Math.floor(secs / 60);
     const seconds = Math.floor(secs % 60);
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
@@ -385,7 +326,7 @@ export default function AudioPlayer({
 
   return (
     <>
-      {/* Audio nativo para archivos locales */}
+      {/* Audio nativo para archivos de sonido directos */}
       {activeTrack.audioUrl && (
         <audio
           ref={audioRef}
@@ -394,314 +335,273 @@ export default function AudioPlayer({
         />
       )}
 
-      {/* Motor de Audio en Segundo Plano */}
-      <div
-        style={{
-          position: "fixed", bottom: "0", right: "0", width: "2px", height: "2px", opacity: 0.01,
-          pointerEvents: "none",
-          zIndex: -1,
-        }}
-        aria-hidden="true"
-      >
-        <div id="selva-yt-monitor" />
-      </div>
-
-      {/* Playlist desplegable */}
-      {isPlaylistOpen && (
-        <div className="player-playlist-panel">
-          <div className="player-playlist-header">
-            <div>
-              <h3>Playlist Oficial · SELVA MUSIC GROUP</h3>
-              <p>{tracks.length} temas oficiales en rotación</p>
-            </div>
-            <button
-              type="button"
-              className="player-playlist-close"
-              onClick={() => setIsPlaylistOpen(false)}
-              aria-label="Cerrar playlist"
-            >
-              <ChevronDown size={20} />
-            </button>
-          </div>
-          <div className="player-playlist-list">
-            {tracks.map((track, idx) => {
-              const isCurrent = activeTrack?.id === track.id;
-              return (
-                <div
-                  key={track.id + idx}
-                  className={`playlist-item ${isCurrent ? "is-playing" : ""}`}
-                  onClick={() => onPlayTrack(track)}
-                >
-                  <span className="playlist-item-idx">
-                    {isCurrent && isPlaying ? (
-                      <span className="audio-equalizer">
-                        <i />
-                        <i />
-                        <i />
-                      </span>
-                    ) : (
-                      idx + 1
-                    )}
-                  </span>
-                  <img src={track.coverUrl} alt="" className="playlist-item-cover" />
-                  <div className="playlist-item-info">
-                    <strong>{track.title}</strong>
-                    <span>{track.artist}</span>
-                  </div>
-                  <span className="playlist-item-dur">{track.duration}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* =========================================================================
-          REPRODUCTOR DUAL: CÍRCULO FLOTANTE ULTRA COMPACTO vs CONSOLA EXPANDIDA
+          1. MODO BURBUJA FLOTANTE (DRAGGABLE Y RESPONSIVO A CLICS EN PC Y CELULAR)
           ========================================================================= */}
-
       {isBubbleMode ? (
-        /* 🟢 MODO CÍRCULO FLOTANTE MOVIBLE LIBREMENTE (DRAGGABLE EN PC Y CELULARES) */
-        <aside
-          className="selva-circle-player is-movable"
-          aria-label="Reproductor circular compacto y movible"
-          draggable={false}
-          onDragStart={(e) => e.preventDefault()}
-          style={
-            fabPos
-              ? {
-                  left: `${fabPos.x}px`,
-                  top: `${fabPos.y}px`,
-                  right: "auto",
-                  bottom: "auto",
-                  position: "fixed",
-                }
-              : undefined
-          }
-          onPointerDown={handlePointerDownFab}
-        >
-          <button
-            type="button"
-            className={`circle-fab-btn ${isPlaying ? "is-playing" : ""}`}
-            draggable={false}
-            onDragStart={(e) => e.preventDefault()}
-            onClick={(e) => {
-              if (dragRef.current.hasDragged) {
-                e.preventDefault();
-                e.stopPropagation();
-                return;
-              }
-              setIsBubbleMode(false);
-              if (!isPlaying) {
-                handleTogglePlaySync(e);
-              }
-            }}
-            title={`🎵 ${activeTrack.title} — Arrastra libremente por la pantalla en PC o móvil / Toca para abrir`}
-            aria-label="Abrir reproductor de música"
-          >
-            {/* Vinilo giratorio con la carátula */}
-            <div className={`circle-vinyl-disc ${isPlaying ? "is-spinning" : ""}`} draggable={false}>
-              <img
-                src={activeTrack.coverUrl}
-                alt={activeTrack.title}
-                draggable={false}
-                onDragStart={(e) => e.preventDefault()}
-              />
-              <div className="vinyl-grooves" />
-              <div className="vinyl-center-dot" />
-            </div>
-
-            {/* Ecualizador dinámico en miniatura */}
-            {isPlaying && (
-              <div className="circle-eq-badge">
-                <i />
-                <i />
-                <i />
-              </div>
-            )}
-
-            {/* Botón rápido Play/Pause flotante */}
-            <span
-              className="circle-play-badge"
-              onClick={(e) => {
-                if (dragRef.current.hasDragged) return;
-                handleTogglePlaySync(e);
-              }}
-              title={isPlaying ? "Pausar música" : "Reproducir música"}
-            >
-              {isPlaying ? <Pause size={12} fill="currentColor" /> : <Play size={12} fill="currentColor" />}
-            </span>
-          </button>
-        </aside>
-      ) : (
-        /* 🔵 MODO EXPANDIDO (CONSOLA COMPLETA DE ESTUDIO CON TODOS LOS CONTROLES) */
-        <aside className="global-audio-bar is-expanded-mode" aria-label="Reproductor de música de estudio">
-          {/* Barra superior de control para minimizar fácilmente tanto en PC como en celular */}
-          <div className="console-top-strip">
-            <div className="console-strip-badge">
-              <SelvaLogo variant="mark" size="sm" />
-              <span className="live-dot" />
-              <span>ESTUDIO EN VIVO · SELVA MUSIC GROUP</span>
-            </div>
-            <button
-              type="button"
-              className="console-minimize-pill"
-              onClick={() => setIsBubbleMode(true)}
-              title="Reducir a círculo flotante"
-              aria-label="Minimizar reproductor"
-            >
-              <ChevronDown size={16} />
-              <span>Minimizar a Círculo</span>
-            </button>
+        <>
+          {/* Iframe continuo en segundo plano para que el sonido no se corte al minimizar */}
+          <div className="selva-bg-monitor-minimized" aria-hidden="true">
+            <iframe
+              ref={iframeRef}
+              key={activeTrack.youtubeId}
+              src={`https://www.youtube-nocookie.com/embed/${activeTrack.youtubeId}?autoplay=${isPlaying ? 1 : 0}&enablejsapi=1&playsinline=1&rel=0`}
+              title={activeTrack.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              className="halfscreen-iframe"
+            />
           </div>
 
-          <div className="audio-bar-inner">
-            {/* Track Actual */}
-            <div className="audio-track-media">
-              <img
-                src={activeTrack.coverUrl}
-                alt={activeTrack.title}
-                className="audio-thumb"
-              />
-              <div className="audio-meta">
-                <strong className="audio-title">{activeTrack.title}</strong>
-                <span className="audio-artist">{activeTrack.artist}</span>
+          <aside
+            className="selva-circle-player is-movable"
+            aria-label="Reproductor circular flotante SELVA"
+            style={
+              fabPos
+                ? {
+                    left: `${fabPos.x}px`,
+                    top: `${fabPos.y}px`,
+                    right: "auto",
+                    bottom: "auto",
+                    position: "fixed",
+                  }
+                : undefined
+            }
+            onPointerDown={handlePointerDownFab}
+          >
+            <div
+              className={`circle-fab-btn ${isPlaying ? "is-playing" : ""}`}
+              onClick={handleOpenHalfScreen}
+              title={`🎵 ${activeTrack.title} — Clic para abrir Consola Media Pantalla (50%)`}
+            >
+              {/* Vinilo giratorio con la carátula oficial */}
+              <div className={`circle-vinyl-disc ${isPlaying ? "is-spinning" : ""}`}>
+                <img
+                  src={activeTrack.coverUrl}
+                  alt={activeTrack.title}
+                  draggable={false}
+                />
+                <div className="vinyl-grooves" />
+                <div className="vinyl-center-dot" />
+              </div>
+
+              {/* Ecualizador dinámico si está sonando */}
+              {isPlaying && (
+                <div className="circle-eq-badge">
+                  <i />
+                  <i />
+                  <i />
+                </div>
+              )}
+
+              {/* Botón Play/Pause directo en la burbuja */}
+              <button
+                type="button"
+                className="circle-play-badge"
+                onClick={handleTogglePlayDirect}
+                title={isPlaying ? "Pausar música" : "Reproducir música"}
+                aria-label={isPlaying ? "Pausar música" : "Reproducir música"}
+              >
+                {isPlaying ? <Pause size={13} fill="currentColor" /> : <Play size={13} fill="currentColor" />}
+              </button>
+            </div>
+          </aside>
+        </>
+      ) : (
+        /* =========================================================================
+           2. MODO AGRANDADO: CONSOLA DE ESTUDIO OCUPANDO MEDIA PANTALLA (50vh)
+           ========================================================================= */
+        <aside
+          className="selva-halfscreen-console"
+          aria-label="Consola de Estudio Media Pantalla SELVA MUSIC GROUP"
+        >
+          {/* Barra Superior de Control y Minimizado */}
+          <div className="halfscreen-header">
+            <div className="halfscreen-brand">
+              <SelvaLogo variant="mark" size="sm" />
+              <div className="halfscreen-titles">
+                <div className="halfscreen-badge-live">
+                  <span className="live-pulse" />
+                  <span>ESTUDIO EN VIVO · MEDIA PANTALLA (50%)</span>
+                </div>
+                <h3 className="halfscreen-company">SELVA MUSIC GROUP</h3>
               </div>
             </div>
 
-            {/* Controles Centrales & Progreso */}
-            <div className="audio-center-controls">
-              <div className="audio-buttons">
-                {/* Retroceder 10 segundos */}
-                <button
-                  type="button"
-                  className="audio-btn btn-secondary-ctrl"
-                  onClick={() => handleSeekBy(-10)}
-                  aria-label="Retroceder 10 segundos"
-                  title="Retroceder 10s"
-                >
-                  <RotateCcw size={15} />
-                  <span className="step-tag">10s</span>
-                </button>
+            <div className="halfscreen-header-actions">
+              <button
+                type="button"
+                className="halfscreen-btn-minimize"
+                onClick={() => setIsBubbleMode(true)}
+                title="Minimizar a círculo flotante"
+              >
+                <ChevronDown size={18} />
+                <span>Minimizar a Círculo</span>
+              </button>
+            </div>
+          </div>
 
-                {/* Pista anterior */}
-                <button
-                  type="button"
-                  className="audio-btn"
-                  onClick={onPrevTrack}
-                  aria-label="Pista anterior"
-                  title="Pista anterior"
-                >
-                  <SkipBack size={18} />
-                </button>
+          {/* Cuerpo de la Consola: Video Monitor 16:9 + Controles de Audio y Playlist */}
+          <div className="halfscreen-body">
+            {/* Columna 1: Monitor de Video Oficial en Vivo */}
+            <div className="halfscreen-video-column">
+              <div className="halfscreen-video-card">
+                <iframe
+                  ref={iframeRef}
+                  key={activeTrack.youtubeId}
+                  src={`https://www.youtube-nocookie.com/embed/${activeTrack.youtubeId}?autoplay=${isPlaying ? 1 : 0}&enablejsapi=1&playsinline=1&rel=0`}
+                  title={activeTrack.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="halfscreen-iframe"
+                />
+              </div>
+            </div>
 
-                {/* Play / Pause Principal */}
-                <button
-                  type="button"
-                  className="audio-btn-play"
-                  onClick={(e) => handleTogglePlaySync(e)}
-                  aria-label={isPlaying ? "Pausar música" : "Reproducir música"}
-                >
-                  {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
-                </button>
-
-                {/* Siguiente pista */}
-                <button
-                  type="button"
-                  className="audio-btn"
-                  onClick={onNextTrack}
-                  aria-label="Siguiente pista"
-                  title="Siguiente pista"
-                >
-                  <SkipForward size={18} />
-                </button>
-
-                {/* Adelantar 10 segundos */}
-                <button
-                  type="button"
-                  className="audio-btn btn-secondary-ctrl"
-                  onClick={() => handleSeekBy(10)}
-                  aria-label="Adelantar 10 segundos"
-                  title="Adelantar 10s"
-                >
-                  <RotateCw size={15} />
-                  <span className="step-tag">10s</span>
-                </button>
+            {/* Columna 2: Controles Maestros de Audio y Playlist */}
+            <div className="halfscreen-controls-column">
+              {/* Información del Tema Actual */}
+              <div className="halfscreen-track-meta">
+                <div className="meta-info">
+                  <span className="meta-tag">EN ROTACIÓN OFICIAL</span>
+                  <h4 className="meta-title">{activeTrack.title}</h4>
+                  <p className="meta-artist">{activeTrack.artist}</p>
+                </div>
+                <div className="meta-format-badge">
+                  <span>{activeTrack.year || "2026"}</span>
+                </div>
               </div>
 
-              {/* Scrubber / Barra de Progreso */}
-              <div className="audio-progress-row">
-                <span className="audio-time">{formatTime(currentTime)}</span>
+              {/* Scrubber / Barra de Progreso Interactiva */}
+              <div className="halfscreen-progress-wrap">
+                <span className="time-display">{formatTime(currentTime)}</span>
                 <input
                   type="range"
                   min={0}
-                  max={duration || 100}
+                  max={totalDuration}
                   value={currentTime}
                   onChange={handleSeek}
-                  className="audio-progress-bar"
-                  aria-label="Progreso de la canción"
+                  className="halfscreen-progress-slider"
+                  aria-label="Progreso del tema"
                 />
-                <span className="audio-time">
-                  {duration > 0 ? formatTime(duration) : activeTrack.duration}
-                </span>
+                <span className="time-display">{formatTime(totalDuration)}</span>
               </div>
-            </div>
 
-            {/* Acciones Laterales */}
-            <div className="audio-side-actions">
-              {/* Volumen */}
-              <div className="audio-vol-control">
+              {/* Botonera de Control Central */}
+              <div className="halfscreen-button-row">
+                {/* Retroceder 10s */}
                 <button
                   type="button"
-                  className="audio-icon-btn"
-                  onClick={() => {
-                    setIsMuted((prev) => !prev);
-                    if (needsUserUnmute) handleForceUnmute();
-                  }}
-                  aria-label={isMuted ? "Desactivar silencio" : "Silenciar"}
+                  className="btn-step"
+                  onClick={() => handleSeekBy(-10)}
+                  title="Retroceder 10 segundos"
                 >
-                  {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                  <RotateCcw size={15} />
+                  <span>10s</span>
                 </button>
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  value={isMuted ? 0 : volume}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    setVolume(val);
-                    if (isMuted) setIsMuted(false);
-                    if (needsUserUnmute) handleForceUnmute();
-                  }}
-                  className="audio-vol-slider"
-                  aria-label="Control de volumen"
-                />
+
+                {/* Anterior */}
+                <button
+                  type="button"
+                  className="btn-nav"
+                  onClick={onPrevTrack}
+                  title="Pista anterior"
+                  aria-label="Pista anterior"
+                >
+                  <SkipBack size={19} />
+                </button>
+
+                {/* GRAN BOTÓN PLAY / PAUSE CENTRAL EN ORO 24K */}
+                <button
+                  type="button"
+                  className={`btn-master-play ${isPlaying ? "is-active" : ""}`}
+                  onClick={handleTogglePlayDirect}
+                  title={isPlaying ? "Pausar música" : "Reproducir música"}
+                  aria-label={isPlaying ? "Pausar música" : "Reproducir música"}
+                >
+                  {isPlaying ? (
+                    <Pause size={24} fill="currentColor" />
+                  ) : (
+                    <Play size={24} fill="currentColor" style={{ marginLeft: "3px" }} />
+                  )}
+                </button>
+
+                {/* Siguiente */}
+                <button
+                  type="button"
+                  className="btn-nav"
+                  onClick={onNextTrack}
+                  title="Siguiente pista"
+                  aria-label="Siguiente pista"
+                >
+                  <SkipForward size={19} />
+                </button>
+
+                {/* Adelantar 10s */}
+                <button
+                  type="button"
+                  className="btn-step"
+                  onClick={() => handleSeekBy(10)}
+                  title="Adelantar 10 segundos"
+                >
+                  <RotateCw size={15} />
+                  <span>10s</span>
+                </button>
+
+                {/* Control de Volumen y Silencio */}
+                <div className="halfscreen-volume-inline">
+                  <button
+                    type="button"
+                    className="btn-vol-mute"
+                    onClick={toggleMute}
+                    title={isMuted ? "Activar sonido" : "Silenciar"}
+                  >
+                    {isMuted || volume === 0 ? <VolumeX size={17} /> : <Volume2 size={17} />}
+                  </button>
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={isMuted ? 0 : volume}
+                    onChange={(e) => handleVolumeChange(Number(e.target.value))}
+                    className="halfscreen-vol-slider"
+                    aria-label="Volumen"
+                  />
+                </div>
               </div>
 
-              {/* Playlist Oficial */}
-              <button
-                type="button"
-                className={`audio-icon-btn audio-playlist-btn ${isPlaylistOpen ? "is-open" : ""}`}
-                onClick={() => setIsPlaylistOpen((prev) => !prev)}
-                aria-label="Abrir playlist oficial"
-                title="Abrir playlist"
-              >
-                <ListMusic size={19} />
-                <span className="playlist-count-pill">{tracks.length}</span>
-              </button>
-
-              {/* Botón para MINIMIZAR A BURBUJA */}
-              <button
-                type="button"
-                className="audio-icon-btn audio-collapse-btn audio-collapse-btn-prominent"
-                onClick={() => setIsBubbleMode(true)}
-                title="Reducir a círculo flotante"
-                aria-label="Minimizar reproductor a círculo"
-              >
-                <Minimize2 size={16} />
-                <span className="collapse-text-tag">Reducir</span>
-              </button>
+              {/* Selector Rápido de Pistas Oficiales */}
+              <div className="halfscreen-playlist-strip">
+                <span className="playlist-label">REPERTORIO:</span>
+                <div className="playlist-scroll-list">
+                  {tracks.map((t, idx) => {
+                    const isCurr = t.id === activeTrack.id;
+                    return (
+                      <button
+                        key={t.id + idx}
+                        type="button"
+                        className={`playlist-chip ${isCurr ? "is-selected" : ""}`}
+                        onClick={() => {
+                          onPlayTrack(t);
+                          if (!isPlaying) {
+                            onTogglePlay();
+                          }
+                        }}
+                      >
+                        {isCurr && isPlaying && (
+                          <span className="chip-eq">
+                            <i />
+                            <i />
+                            <i />
+                          </span>
+                        )}
+                        <span className="chip-num">{idx + 1}.</span>
+                        <span className="chip-title">{t.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </aside>
