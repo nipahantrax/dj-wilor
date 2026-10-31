@@ -2346,6 +2346,34 @@ img { display: block; max-width: 100%; }
   gap: 12px;
 }
 
+.admin-title-texts {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-title-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-header-chip {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  background: rgba(201, 255, 61, 0.12);
+  color: var(--lime);
+  border: 1px solid rgba(201, 255, 61, 0.3);
+  border-radius: 4px;
+  letter-spacing: 0.06em;
+}
+
+.admin-header-sub {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: rgba(241, 238, 228, 0.6);
+}
+
 .admin-badge-icon {
   font-size: 24px;
 }
@@ -3964,65 +3992,151 @@ img { display: block; max-width: 100%; }
     display: inline !important;
   }
 
-  /* Modal y Contenedor del Panel Maestro */
+  /* Modal y Contenedor del Panel Maestro: Modo Pantalla Completa Nativo en Celular */
   .admin-modal-backdrop {
-    padding: 6px;
-    align-items: flex-end;
+    padding: 0 !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    background: #080c09 !important;
   }
 
   .admin-modal-container {
-    width: 100%;
-    max-height: 96vh;
-    border-radius: 10px 10px 0 0;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    border: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    margin: 0 !important;
+    box-shadow: none !important;
   }
 
+  /* Cabecera Ultra Compacta en 1 sola fila sin desbordes */
   .admin-modal-header {
-    padding: 10px 14px;
+    padding: 8px 12px !important;
+    height: 50px !important;
+    flex-shrink: 0 !important;
+    background: #111813 !important;
+    border-bottom: 1px solid rgba(201, 255, 61, 0.25) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
   }
 
   .admin-header-title {
-    gap: 8px;
+    gap: 8px !important;
+    min-width: 0 !important;
   }
 
   .admin-badge-icon {
-    font-size: 20px;
+    font-size: 18px !important;
+    flex-shrink: 0 !important;
   }
 
-  .admin-header-title h2 {
-    font-size: 13px;
-    line-height: 1.2;
+  .admin-title-top {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
   }
 
-  .admin-header-title p {
-    display: none;
+  .admin-title-top h2 {
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+    color: var(--lime) !important;
+  }
+
+  .admin-header-chip {
+    font-size: 8px !important;
+    font-weight: 800 !important;
+    padding: 1px 4px !important;
+    background: rgba(201, 255, 61, 0.15) !important;
+    color: var(--lime) !important;
+    border-radius: 3px !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  .admin-header-sub {
+    display: none !important;
+  }
+
+  .admin-header-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
   }
 
   .admin-btn-logout {
-    font-size: 10px;
-    padding: 4px 8px;
+    font-size: 10px !important;
+    padding: 5px 8px !important;
+    gap: 4px !important;
   }
 
-  /* Pestañas de navegación responsive táctiles en Cuenta Maestra */
+  .logout-text {
+    display: none !important;
+  }
+
+  /* Barra de Pestañas Tipo App Móvil (4 Columnas Exactas, NUNCA se apilan verticalmente) */
   .admin-nav-tabs {
-    display: flex;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    gap: 4px;
-    padding: 8px 10px 0;
-    scrollbar-width: none;
-    border-bottom: 1px solid rgba(241, 238, 228, 0.1);
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 1px !important;
+    padding: 0 !important;
+    background: #0a0f0c !important;
+    border-bottom: 1px solid rgba(241, 238, 228, 0.12) !important;
+    flex-shrink: 0 !important;
+    width: 100% !important;
+    overflow: hidden !important;
   }
 
   .admin-nav-tabs::-webkit-scrollbar {
-    display: none;
+    display: none !important;
   }
 
   .admin-nav-tab {
-    font-size: 11px;
-    padding: 9px 12px;
-    white-space: nowrap;
-    flex-shrink: 0;
-    gap: 6px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    padding: 8px 2px !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    color: rgba(241, 238, 228, 0.6) !important;
+    background: transparent !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    transition: all 120ms ease !important;
+  }
+
+  .admin-nav-tab svg {
+    width: 16px !important;
+    height: 16px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .admin-nav-tab.is-active {
+    color: var(--lime) !important;
+    border-bottom-color: var(--lime) !important;
+    background: rgba(201, 255, 61, 0.1) !important;
+  }
+
+  /* Layout y scroll del contenido */
+  .admin-content-layout {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
   }
 
   /* Grid del Panel Maestro en una columna */
@@ -4030,6 +4144,10 @@ img { display: block; max-width: 100%; }
     grid-template-columns: 1fr !important;
     gap: 14px;
     padding: 12px;
+    flex: 1 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    max-height: none !important;
   }
 
   .admin-panel-card {
@@ -4037,8 +4155,10 @@ img { display: block; max-width: 100%; }
   }
 
   .admin-panel-card.full-width {
-    max-height: calc(94vh - 120px);
+    max-height: none !important;
+    height: auto !important;
     padding: 14px;
+    overflow-y: visible !important;
   }
 
   /* Formularios en Maestro */

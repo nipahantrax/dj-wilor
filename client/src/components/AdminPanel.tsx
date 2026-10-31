@@ -316,15 +316,18 @@ export default function AdminPanel({
         <div className="admin-modal-header">
           <div className="admin-header-title">
             <span className="admin-badge-icon">🌴</span>
-            <div>
-              <h2>PANEL MAESTRO · SELVA MUSIC GROUP</h2>
-              <p>Control Total de Roster, Subida de Música a Playlists y Calendario Anticolisión</p>
+            <div className="admin-title-texts">
+              <div className="admin-title-top">
+                <h2>PANEL MAESTRO</h2>
+                <span className="admin-header-chip">SELVA MUSIC</span>
+              </div>
+              <p className="admin-header-sub">Control Total de Roster, Música, Agenda y Contratos 360°</p>
             </div>
           </div>
           <div className="admin-header-actions">
             {isAuthenticated && (
-              <button type="button" onClick={handleLogout} className="admin-btn-logout">
-                <LogOut size={14} /> Cerrar Sesión
+              <button type="button" onClick={handleLogout} className="admin-btn-logout" title="Cerrar Sesión">
+                <LogOut size={14} /> <span className="logout-text">Cerrar Sesión</span>
               </button>
             )}
             <button type="button" onClick={onClose} className="admin-btn-close" aria-label="Cerrar Panel">
