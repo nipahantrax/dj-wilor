@@ -4,6 +4,7 @@ import type { ReactNode, SyntheticEvent } from "react";
 import AdminPanel from "@/components/AdminPanel";
 import AudioPlayer from "@/components/AudioPlayer";
 import BookingModal from "@/components/BookingModal";
+import SelvaLogo from "@/components/SelvaLogo";
 import SiteHeader from "@/components/SiteHeader";
 import { contact, extractAllTracks, initialBookings, milestones, rosterArtists, ROSTER_VERSION, sealLink, socialLinks, works, type Artist, type EventBooking, type Track } from "@/lib/wilorContent";
 
@@ -194,15 +195,18 @@ export default function Home() {
           <div className="hero-vignette" aria-hidden="true" />
           <div className="hero-grain" aria-hidden="true" />
           <div className="hero-inner">
-            <p className="hero-overline"><span className="status-dot" /> ARTISTA · PRODUCTOR · BOLIVIA</p>
-            <h1 id="hero-title">Desde el Trópico.<br /><em>Con sonido propio.</em></h1>
+            <div className="hero-logo-badge mb-5">
+              <SelvaLogo variant="full" size="lg" />
+            </div>
+            <p className="hero-overline"><span className="status-dot" /> SELLO DISCOGRÁFICO · MANAGEMENT & BOOKING ÉLITE · BOLIVIA</p>
+            <h1 id="hero-title">SELVA<br /><em>MUSIC GROUP.</em></h1>
             <div className="hero-lower">
-              <p className="hero-copy">DJ WILOR crea desde el Trópico de Cochabamba, Bolivia. Música, escenario y una visión abierta a nuevas voces.</p>
+              <p className="hero-copy">El sello discográfico y plataforma de management de élite del Trópico de Cochabamba, Bolivia. Fundado por DJ WILOR para producir, potenciar y exportar la nueva generación de la música urbana y tropical.</p>
               <div className="hero-actions">
-                <a className="button button-lime" href="https://open.spotify.com/artist/6AiurSOGTBZe8MKSNCPuya" target="_blank" rel="noreferrer">
-                  Escuchar a WILOR <ArrowUpRight size={16} />
+                <a className="button button-lime" href="#artistas">
+                  Roster de Artistas <ArrowUpRight size={16} />
                 </a>
-                <a className="text-link" href="#portafolio">Explorar portafolio <ArrowDownRight size={17} /></a>
+                <a className="text-link" href="#portafolio">Catálogo Musical <ArrowDownRight size={17} /></a>
               </div>
             </div>
             <div className="hero-index" aria-hidden="true"><span>ARTISTA DEL TRÓPICO</span><span>COCHABAMBA · BOLIVIA</span></div>
@@ -215,8 +219,8 @@ export default function Home() {
           <div className="hero-image-note">VISUAL EDITORIAL · LANZAMIENTO DESTACADO ABAJO</div>
         </section>
 
-        <div className="signal-strip" aria-label="Identidad de WILOR">
-          <span>TRÓPICO DE COCHABAMBA</span><i aria-hidden="true">✳</i><span>PRODUCCIÓN MUSICAL</span><i aria-hidden="true">✳</i><span>SELVA MUSIC GROUP</span><i aria-hidden="true">✳</i><span>TRÓPICO DE COCHABAMBA</span>
+        <div className="signal-strip" aria-label="Identidad de SELVA MUSIC GROUP">
+          <span>SELVA MUSIC GROUP</span><i aria-hidden="true">✦</i><span>ROSTER DE ARTISTAS DE ÉLITE</span><i aria-hidden="true">✦</i><span>PRODUCCIÓN MUSICAL & MANAGEMENT</span><i aria-hidden="true">✦</i><span>TRÓPICO DE COCHABAMBA · BOLIVIA</span>
         </div>
 
         <section className="portfolio-section section-wrap" id="portafolio" aria-labelledby="portfolio-title">
@@ -519,13 +523,15 @@ export default function Home() {
               <a className="button button-light-outline" href={`tel:${contact.phoneLink}`}>Llamar · {contact.phoneDisplay} <ArrowUpRight size={16} /></a>
             </div>
           </div>
-          <div className="contact-side"><span className="contact-mark">W<span>.</span></span><p>TRÓPICO DE<br />COCHABAMBA<br /><strong>BOLIVIA</strong></p><span className="contact-line" /></div>
+          <div className="contact-side"><span className="contact-mark">SMG<span>.</span></span><p>TRÓPICO DE<br />COCHABAMBA<br /><strong>BOLIVIA</strong></p><span className="contact-line" /></div>
         </section>
       </main>
 
       <footer className="site-footer">
-        <a className="footer-brand" href="#inicio">WILOR<span>.</span></a>
-        <p>Artista · Productor · Cochabamba, Bolivia</p>
+        <a className="footer-brand" href="#inicio" aria-label="SELVA MUSIC GROUP, volver al inicio">
+          <SelvaLogo variant="full" size="md" />
+        </a>
+        <p>Sello Discográfico · Productora de Élite · Cochabamba, Bolivia</p>
         <div className="footer-links">
           <a href="https://www.youtube.com/@Wilordj" target="_blank" rel="noreferrer">YouTube</a>
           <a href="https://www.tiktok.com/@djwilor" target="_blank" rel="noreferrer">TikTok</a>
@@ -533,14 +539,14 @@ export default function Home() {
           <a href="https://www.facebook.com/WilorDj/" target="_blank" rel="noreferrer">Facebook</a>
         </div>
         <div className="footer-bottom">
-          <span>© 2026 WILOR · Portafolio de música y trayectoria</span>
+          <span>© 2026 SELVA MUSIC GROUP · Sello Discográfico & Management · Todos los derechos reservados · Bolivia</span>
           <button
             type="button"
             className="footer-admin-trigger"
             onClick={() => setIsAdminOpen(true)}
-            title="Panel Maestro de Administración"
+            title="Panel de Control Maestro SELVA MUSIC GROUP"
           >
-            <Lock size={12} /> Acceso Maestro SELVA MUSIC
+            <Lock size={12} /> Acceso Maestro SELVA MUSIC GROUP
           </button>
           <a href="#inicio">Volver arriba <ArrowUpRight size={13} /></a>
         </div>

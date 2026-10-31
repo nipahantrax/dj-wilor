@@ -184,7 +184,7 @@ He descargado el Voucher Oficial *${bookingId}*. Deseo coordinar la cotización 
               <ShieldCheck size={13} /> SELVA MUSIC GROUP · BOOKING OFICIAL
             </span>
             <span className="booking-tag-status">
-              <span className="status-dot-green" /> TEMPORADA 2026
+              <span className="status-dot-gold" /> TEMPORADA 2026
             </span>
           </div>
           <button

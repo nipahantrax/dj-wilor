@@ -21,6 +21,7 @@ import {
 import React, { useState } from "react";
 import type { Artist, EventBooking, Track } from "@/lib/wilorContent";
 import LegalContractsPanel from "./LegalContractsPanel";
+import SelvaLogo from "./SelvaLogo";
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -315,11 +316,11 @@ export default function AdminPanel({
         {/* Cabecera del Panel */}
         <div className="admin-modal-header">
           <div className="admin-header-title">
-            <img src="./assets/icon-192.png" alt="DJ WILOR" className="admin-badge-logo" />
+            <SelvaLogo variant="mark" size="sm" className="admin-badge-logo" />
             <div className="admin-title-texts">
               <div className="admin-title-top">
                 <h2>PANEL MAESTRO</h2>
-                <span className="admin-header-chip">SELVA MUSIC</span>
+                <span className="admin-header-chip">SELVA MUSIC GROUP</span>
               </div>
               <p className="admin-header-sub">Control Total de Roster, Música, Agenda y Contratos 360°</p>
             </div>

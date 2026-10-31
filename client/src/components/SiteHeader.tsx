@@ -1,5 +1,6 @@
 import { ArrowUpRight, Lock, Menu, X } from "lucide-react";
 import { useState } from "react";
+import SelvaLogo from "./SelvaLogo";
 
 const navigation = [
   { label: "Música", href: "#portafolio" },
@@ -18,13 +19,8 @@ export default function SiteHeader({ onOpenAdmin }: SiteHeaderProps) {
 
   return (
     <header className="site-header">
-      <a className="brand" href="#inicio" aria-label="WILOR, volver al inicio" onClick={closeMenu}>
-        <span className="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 34 34" fill="none">
-            <path d="M3 8h4l3.1 17L17 9l6.9 16L27 8h4" stroke="currentColor" strokeWidth="2.6" strokeLinecap="square" strokeLinejoin="miter" />
-          </svg>
-        </span>
-        <span className="brand-word">WILOR<span className="brand-period">.</span></span>
+      <a className="brand selva-brand" href="#inicio" aria-label="SELVA MUSIC GROUP, volver al inicio" onClick={closeMenu}>
+        <SelvaLogo variant="full" size="md" />
       </a>
 
       <button
@@ -55,7 +51,7 @@ export default function SiteHeader({ onOpenAdmin }: SiteHeaderProps) {
               closeMenu();
               onOpenAdmin();
             }}
-            title="Panel de Control Maestro SELVA MUSIC"
+            title="Panel de Control Maestro SELVA MUSIC GROUP"
           >
             <Lock size={13} /> Acceso Maestro
           </button>

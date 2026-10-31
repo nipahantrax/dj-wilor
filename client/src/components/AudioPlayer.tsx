@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import type { Track } from "@/lib/wilorContent";
+import SelvaLogo from "./SelvaLogo";
 
 interface AudioPlayerProps {
   tracks: Track[];
@@ -503,6 +504,7 @@ export default function AudioPlayer({
           {/* Barra superior de control para minimizar fácilmente tanto en PC como en celular */}
           <div className="console-top-strip">
             <div className="console-strip-badge">
+              <SelvaLogo variant="mark" size="sm" />
               <span className="live-dot" />
               <span>ESTUDIO EN VIVO · SELVA MUSIC GROUP</span>
             </div>
