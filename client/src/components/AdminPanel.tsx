@@ -11,6 +11,7 @@ import {
   Music2,
   Play,
   Plus,
+  Scale,
   Trash2,
   Upload,
   UserCheck,
@@ -19,6 +20,7 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import type { Artist, EventBooking, Track } from "@/lib/wilorContent";
+import LegalContractsPanel from "./LegalContractsPanel";
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -39,7 +41,7 @@ export default function AdminPanel({
   onSaveBookings,
   onPlayTrack,
 }: AdminPanelProps) {
-  const [activeTab, setActiveTab] = useState<"artists" | "music" | "calendar">("artists");
+  const [activeTab, setActiveTab] = useState<"artists" | "music" | "calendar" | "legal">("artists");
   const [authError, setAuthError] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     try {
@@ -379,21 +381,36 @@ export default function AdminPanel({
                 className={`admin-nav-tab ${activeTab === "artists" ? "is-active" : ""}`}
                 onClick={() => setActiveTab("artists")}
               >
-                <Users size={16} /> Artistas & Perfiles ({artists.length})
+                <Users size={16} />
+                <span className="tab-label-full">Artistas & Perfiles ({artists.length})</span>
+                <span className="tab-label-short">Artistas ({artists.length})</span>
               </button>
               <button
                 type="button"
                 className={`admin-nav-tab ${activeTab === "music" ? "is-active" : ""}`}
                 onClick={() => setActiveTab("music")}
               >
-                <Music2 size={16} /> Gestor de Música & Playlists
+                <Music2 size={16} />
+                <span className="tab-label-full">Gestor de Música & Playlists</span>
+                <span className="tab-label-short">Música</span>
               </button>
               <button
                 type="button"
                 className={`admin-nav-tab ${activeTab === "calendar" ? "is-active" : ""}`}
                 onClick={() => setActiveTab("calendar")}
               >
-                <Calendar size={16} /> Calendario de Shows & Cruces ({bookings.length})
+                <Calendar size={16} />
+                <span className="tab-label-full">Calendario & Cruces ({bookings.length})</span>
+                <span className="tab-label-short">Agenda ({bookings.length})</span>
+              </button>
+              <button
+                type="button"
+                className={`admin-nav-tab ${activeTab === "legal" ? "is-active" : ""}`}
+                onClick={() => setActiveTab("legal")}
+              >
+                <Scale size={16} />
+                <span className="tab-label-full">⚖️ Legal & Contratos 360°</span>
+                <span className="tab-label-short">Legal (7)</span>
               </button>
             </div>
 
@@ -914,6 +931,9 @@ export default function AdminPanel({
                 </div>
               </div>
             )}
+
+            {/* TAB 4: DEPARTAMENTO LEGAL & CONTRATOS 360° (LEYES DE BOLIVIA) */}
+            {activeTab === "legal" && <LegalContractsPanel />}
           </div>
         )}
       </div>

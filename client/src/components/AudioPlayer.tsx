@@ -60,6 +60,89 @@ export default function AudioPlayer({
   const [isBubbleMode, setIsBubbleMode] = useState(true); // Inicia como burbuja flotante moderna
   const [needsUserUnmute, setNeedsUserUnmute] = useState(false);
 
+  // Posición libre movible en pantalla (Draggable en Móviles, Tablets y PC)
+  const [fabPos, setFabPos] = useState<{ x: number; y: number } | null>(() => {
+    try {
+      const saved = localStorage.getItem("selva_fab_pos");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return null;
+  });
+
+  const dragRef = useRef<{
+    isDragging: boolean;
+    startX: number;
+    startY: number;
+    initialX: number;
+    initialY: number;
+    hasDragged: boolean;
+  }>({
+    isDragging: false,
+    startX: 0,
+    startY: 0,
+    initialX: 0,
+    initialY: 0,
+    hasDragged: false,
+  });
+
+  const handlePointerDownFab = (e: React.PointerEvent<HTMLElement>) => {
+    // Aceptamos toques primarios o clic principal izquierdo
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+    const target = e.currentTarget;
+    const rect = target.getBoundingClientRect();
+
+    dragRef.current = {
+      isDragging: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: rect.left,
+      initialY: rect.top,
+      hasDragged: false,
+    };
+
+    const handlePointerMove = (ev: PointerEvent) => {
+      if (!dragRef.current.isDragging) return;
+      const dx = ev.clientX - dragRef.current.startX;
+      const dy = ev.clientY - dragRef.current.startY;
+
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+        dragRef.current.hasDragged = true;
+      }
+
+      const fabSize = 60;
+      const padding = 10;
+      const maxX = Math.max(padding, window.innerWidth - fabSize - padding);
+      const maxY = Math.max(padding, window.innerHeight - fabSize - padding);
+
+      const targetX = Math.min(Math.max(padding, dragRef.current.initialX + dx), maxX);
+      const targetY = Math.min(Math.max(padding, dragRef.current.initialY + dy), maxY);
+
+      setFabPos({ x: targetX, y: targetY });
+    };
+
+    const handlePointerUp = () => {
+      dragRef.current.isDragging = false;
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+
+      if (dragRef.current.hasDragged) {
+        setFabPos((curr) => {
+          if (curr) {
+            try {
+              localStorage.setItem("selva_fab_pos", JSON.stringify(curr));
+            } catch {}
+          }
+          return curr;
+        });
+      }
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
+  };
+
   const activeTrack = currentTrack || tracks[0];
 
   // 1. Cargar YouTube IFrame API de forma asíncrona
@@ -327,76 +410,71 @@ export default function AudioPlayer({
       )}
 
       {/* =========================================================================
-          REPRODUCTOR DUAL: BURBUJA FLOTANTE COMPACTA vs CONSOLA EXPANDIDA
+          REPRODUCTOR DUAL: CÍRCULO FLOTANTE ULTRA COMPACTO vs CONSOLA EXPANDIDA
           ========================================================================= */}
 
       {isBubbleMode ? (
-        /* 🟢 MODO BURBUJA FLOTANTE MODERNA (NO OCUPA ESPACIO EN PANTALLA) */
-        <aside className="selva-bubble-player" aria-label="Reproductor flotante compacto">
-          <div className="bubble-player-inner" onClick={() => setIsBubbleMode(false)}>
-            {/* Vinilo / Carátula circular giratoria */}
-            <div className={`bubble-disc ${isPlaying ? "is-spinning" : ""}`}>
+        /* 🟢 MODO CÍRCULO FLOTANTE MOVIBLE LIBREMENTE (DRAGGABLE EN CUALQUIER PARTE DE LA PANTALLA) */
+        <aside
+          className="selva-circle-player is-movable"
+          aria-label="Reproductor circular compacto y movible"
+          style={
+            fabPos
+              ? {
+                  left: `${fabPos.x}px`,
+                  top: `${fabPos.y}px`,
+                  right: "auto",
+                  bottom: "auto",
+                  position: "fixed",
+                }
+              : undefined
+          }
+          onPointerDown={handlePointerDownFab}
+        >
+          <button
+            type="button"
+            className={`circle-fab-btn ${isPlaying ? "is-playing" : ""}`}
+            onClick={(e) => {
+              if (dragRef.current.hasDragged) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+              }
+              setIsBubbleMode(false);
+            }}
+            title={`🎵 ${activeTrack.title} — Arrastra libremente por la pantalla / Toca para abrir`}
+            aria-label="Abrir reproductor de música"
+          >
+            {/* Vinilo giratorio con la carátula */}
+            <div className={`circle-vinyl-disc ${isPlaying ? "is-spinning" : ""}`}>
               <img src={activeTrack.coverUrl} alt={activeTrack.title} />
-              <div className="disc-center-hole" />
+              <div className="vinyl-grooves" />
+              <div className="vinyl-center-dot" />
             </div>
 
-            {/* Ecualizador animado */}
+            {/* Ecualizador dinámico en miniatura */}
             {isPlaying && (
-              <div className="bubble-eq">
+              <div className="circle-eq-badge">
                 <i />
                 <i />
                 <i />
               </div>
             )}
 
-            {/* Metadatos compactos */}
-            <div className="bubble-info">
-              <strong className="bubble-title">{activeTrack.title}</strong>
-              <span className="bubble-artist">{activeTrack.artist}</span>
-            </div>
-
-            {/* Botón rápido Play/Pause */}
-            <button
-              type="button"
-              className="bubble-btn-play"
+            {/* Botón rápido Play/Pause flotante */}
+            <span
+              className="circle-play-badge"
               onClick={(e) => {
                 e.stopPropagation();
+                if (dragRef.current.hasDragged) return;
                 onTogglePlay();
                 if (needsUserUnmute) handleForceUnmute();
               }}
-              aria-label={isPlaying ? "Pausar" : "Reproducir"}
+              title={isPlaying ? "Pausar música" : "Reproducir música"}
             >
-              {isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
-            </button>
-
-            {/* Botón rápido Siguiente */}
-            <button
-              type="button"
-              className="bubble-btn-skip"
-              onClick={(e) => {
-                e.stopPropagation();
-                onNextTrack();
-              }}
-              aria-label="Siguiente tema"
-              title="Siguiente pista"
-            >
-              <SkipForward size={14} />
-            </button>
-
-            {/* Botón para expandir a consola completa */}
-            <button
-              type="button"
-              className="bubble-btn-expand"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsBubbleMode(false);
-              }}
-              title="Expandir reproductor completo"
-              aria-label="Expandir reproductor"
-            >
-              <Maximize2 size={13} />
-            </button>
-          </div>
+              {isPlaying ? <Pause size={12} fill="currentColor" /> : <Play size={12} fill="currentColor" />}
+            </span>
+          </button>
         </aside>
       ) : (
         /* 🔵 MODO EXPANDIDO (CONSOLA COMPLETA DE ESTUDIO CON TODOS LOS CONTROLES) */
