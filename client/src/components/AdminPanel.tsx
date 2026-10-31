@@ -315,7 +315,7 @@ export default function AdminPanel({
         {/* Cabecera del Panel */}
         <div className="admin-modal-header">
           <div className="admin-header-title">
-            <span className="admin-badge-icon">🌴</span>
+            <img src="./assets/icon-192.png" alt="DJ WILOR" className="admin-badge-logo" />
             <div className="admin-title-texts">
               <div className="admin-title-top">
                 <h2>PANEL MAESTRO</h2>

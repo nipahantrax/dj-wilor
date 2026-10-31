@@ -3630,6 +3630,15 @@ img { display: block; max-width: 100%; }
   right: 20px;
   z-index: 99995;
   animation: circle-pop-in 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-user-drag: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.selva-circle-player * {
+  -webkit-user-drag: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
 }
 
 @keyframes circle-pop-in {
@@ -3749,6 +3758,91 @@ img { display: block; max-width: 100%; }
 /* Consola Expandida Móvil */
 .is-expanded-mode {
   animation: console-expand 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.console-top-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: #0d140f;
+  border-bottom: 1px solid rgba(241, 238, 228, 0.08);
+}
+
+.console-strip-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--lime);
+  text-transform: uppercase;
+}
+
+.console-minimize-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  background: rgba(201, 255, 61, 0.15);
+  border: 1px solid var(--lime);
+  color: var(--lime);
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.console-minimize-pill:hover {
+  background: var(--lime);
+  color: var(--ink);
+  box-shadow: 0 0 14px rgba(201, 255, 61, 0.45);
+}
+
+.audio-collapse-btn-prominent {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 14px !important;
+  width: auto !important;
+  border-radius: 9999px !important;
+  background: rgba(201, 255, 61, 0.14) !important;
+  border: 1px solid var(--lime) !important;
+  color: var(--lime) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+}
+
+.audio-collapse-btn-prominent:hover {
+  background: var(--lime) !important;
+  color: var(--ink) !important;
+}
+
+.collapse-text-tag {
+  display: inline;
+}
+
+.admin-badge-logo {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--lime);
+  object-fit: cover;
+  box-shadow: 0 0 10px rgba(201, 255, 61, 0.4);
+}
+
+.sheet-logo-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #233126;
+  object-fit: cover;
 }
 
 @keyframes console-expand {

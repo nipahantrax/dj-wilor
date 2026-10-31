@@ -86,9 +86,17 @@ export default function AudioPlayer({
   });
 
   const handlePointerDownFab = (e: React.PointerEvent<HTMLElement>) => {
-    // Aceptamos toques primarios o clic principal izquierdo
-    if (e.button !== 0 && e.pointerType === "mouse") return;
+    // Solo clic izquierdo o toque primario
+    if (e.button !== 0) return;
+
+    // Crucial para PC: previene el inicio de drag nativo de imagen (ghost drag) y selección
+    e.preventDefault();
+
     const target = e.currentTarget;
+    try {
+      target.setPointerCapture(e.pointerId);
+    } catch {}
+
     const rect = target.getBoundingClientRect();
 
     dragRef.current = {
@@ -105,11 +113,11 @@ export default function AudioPlayer({
       const dx = ev.clientX - dragRef.current.startX;
       const dy = ev.clientY - dragRef.current.startY;
 
-      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
         dragRef.current.hasDragged = true;
       }
 
-      const fabSize = 60;
+      const fabSize = 58;
       const padding = 10;
       const maxX = Math.max(padding, window.innerWidth - fabSize - padding);
       const maxY = Math.max(padding, window.innerHeight - fabSize - padding);
@@ -120,8 +128,12 @@ export default function AudioPlayer({
       setFabPos({ x: targetX, y: targetY });
     };
 
-    const handlePointerUp = () => {
+    const handlePointerUp = (ev: PointerEvent) => {
       dragRef.current.isDragging = false;
+      try {
+        target.releasePointerCapture(e.pointerId);
+      } catch {}
+
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointercancel", handlePointerUp);
@@ -414,10 +426,12 @@ export default function AudioPlayer({
           ========================================================================= */}
 
       {isBubbleMode ? (
-        /* 🟢 MODO CÍRCULO FLOTANTE MOVIBLE LIBREMENTE (DRAGGABLE EN CUALQUIER PARTE DE LA PANTALLA) */
+        /* 🟢 MODO CÍRCULO FLOTANTE MOVIBLE LIBREMENTE (DRAGGABLE EN PC Y CELULARES) */
         <aside
           className="selva-circle-player is-movable"
           aria-label="Reproductor circular compacto y movible"
+          draggable={false}
+          onDragStart={(e) => e.preventDefault()}
           style={
             fabPos
               ? {
@@ -434,6 +448,8 @@ export default function AudioPlayer({
           <button
             type="button"
             className={`circle-fab-btn ${isPlaying ? "is-playing" : ""}`}
+            draggable={false}
+            onDragStart={(e) => e.preventDefault()}
             onClick={(e) => {
               if (dragRef.current.hasDragged) {
                 e.preventDefault();
@@ -442,12 +458,17 @@ export default function AudioPlayer({
               }
               setIsBubbleMode(false);
             }}
-            title={`🎵 ${activeTrack.title} — Arrastra libremente por la pantalla / Toca para abrir`}
+            title={`🎵 ${activeTrack.title} — Arrastra libremente por la pantalla en PC o móvil / Toca para abrir`}
             aria-label="Abrir reproductor de música"
           >
             {/* Vinilo giratorio con la carátula */}
-            <div className={`circle-vinyl-disc ${isPlaying ? "is-spinning" : ""}`}>
-              <img src={activeTrack.coverUrl} alt={activeTrack.title} />
+            <div className={`circle-vinyl-disc ${isPlaying ? "is-spinning" : ""}`} draggable={false}>
+              <img
+                src={activeTrack.coverUrl}
+                alt={activeTrack.title}
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
+              />
               <div className="vinyl-grooves" />
               <div className="vinyl-center-dot" />
             </div>
@@ -479,6 +500,24 @@ export default function AudioPlayer({
       ) : (
         /* 🔵 MODO EXPANDIDO (CONSOLA COMPLETA DE ESTUDIO CON TODOS LOS CONTROLES) */
         <aside className="global-audio-bar is-expanded-mode" aria-label="Reproductor de música de estudio">
+          {/* Barra superior de control para minimizar fácilmente tanto en PC como en celular */}
+          <div className="console-top-strip">
+            <div className="console-strip-badge">
+              <span className="live-dot" />
+              <span>ESTUDIO EN VIVO · SELVA MUSIC GROUP</span>
+            </div>
+            <button
+              type="button"
+              className="console-minimize-pill"
+              onClick={() => setIsBubbleMode(true)}
+              title="Reducir a círculo flotante"
+              aria-label="Minimizar reproductor"
+            >
+              <ChevronDown size={16} />
+              <span>Minimizar a Círculo</span>
+            </button>
+          </div>
+
           <div className="audio-bar-inner">
             {/* Track Actual */}
             <div className="audio-track-media">
@@ -621,12 +660,13 @@ export default function AudioPlayer({
               {/* Botón para MINIMIZAR A BURBUJA */}
               <button
                 type="button"
-                className="audio-icon-btn audio-collapse-btn"
+                className="audio-icon-btn audio-collapse-btn audio-collapse-btn-prominent"
                 onClick={() => setIsBubbleMode(true)}
-                title="Minimizar a burbuja flotante"
-                aria-label="Minimizar a burbuja"
+                title="Reducir a círculo flotante"
+                aria-label="Minimizar reproductor a círculo"
               >
                 <Minimize2 size={16} />
+                <span className="collapse-text-tag">Reducir</span>
               </button>
             </div>
           </div>

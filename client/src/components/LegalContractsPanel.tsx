@@ -929,7 +929,7 @@ ________________________________________               _________________________
             {/* Membrete Oficial SELVA MUSIC */}
             <div className="sheet-official-header">
               <div className="sheet-logo-group">
-                <div className="sheet-emblem">🌴</div>
+                <img src="./assets/icon-192.png" alt="DJ WILOR" className="sheet-logo-badge" />
                 <div>
                   <div className="sheet-brand-name">SELVA MUSIC GROUP S.R.L.</div>
                   <div className="sheet-brand-sub">SELLO DISCOGRÁFICO · WILOR PRODUCCIONES · BOLIVIA</div>
