@@ -1,0 +1,28 @@
+{
+  "short_name": "DJ WILOR",
+  "name": "DJ WILOR · SELVA MUSIC GROUP",
+  "icons": [
+    {
+      "src": "./assets/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "./assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./",
+  "background_color": "#090e0a",
+  "theme_color": "#0d140f",
+  "display": "standalone",
+  "orientation": "portrait"
+}
